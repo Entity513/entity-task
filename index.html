@@ -621,6 +621,18 @@ body.mobile-mode::after {
   right: 0;
   background: linear-gradient(180deg, #47A0E8, #E8C547, #E87047, #47A0E8);
 }
+/* 下部グラデーション縁 */
+body.mobile-mode .main::after {
+  content: '';
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #E8C547, #E87047, #47A0E8, #E8C547);
+  z-index: 9999;
+  pointer-events: none;
+}
 body.mobile-mode .main { height: auto; overflow: visible; }
 body.mobile-mode .content { overflow: visible; }
 
