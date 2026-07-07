@@ -789,7 +789,7 @@ body.mobile-mode .task-item::after {
   display: none;
 }
 
-/* モバイル：スタッフカードにグラデーション縁取り */
+/* モバイル：エージェントカードにグラデーション縁取り */
 body.mobile-mode .staff-card {
   position: relative;
   border: none !important;
@@ -865,7 +865,7 @@ body.mobile-mode .topbar {
     <span class="icon">✅</span> 全タスク
   </div>
   <div class="nav-item" onclick="switchView('staff')" id="nav-staff">
-    <span class="icon">👥</span> スタッフ
+    <span class="icon">👥</span> エージェント
   </div>
   <div class="nav-item" onclick="switchView('today')" id="nav-today">
     <span class="icon">🗒️</span> 今日のボード
@@ -878,7 +878,7 @@ body.mobile-mode .topbar {
     <span id="pending-badge" style="display:none;background:var(--gold);color:#000;border-radius:10px;padding:1px 7px;font-size:11px;font-weight:700;margin-left:auto;"></span>
   </div>
 
-  <div class="sidebar-section">スタッフ</div>
+  <div class="sidebar-section">エージェント</div>
   <div id="staff-nav"></div>
   <div id="user-badge" style="margin-top:auto;"></div>
 </div>
@@ -926,7 +926,7 @@ body.mobile-mode .topbar {
       <input class="form-input" id="f-title" placeholder="例：SNS投稿スケジュール作成" />
     </div>
     <div class="form-group">
-      <label class="form-label">担当スタッフ *</label>
+      <label class="form-label">担当エージェント *</label>
       <select class="form-select" id="f-staff"></select>
     </div>
     <div class="form-group">
@@ -1183,7 +1183,7 @@ function switchView(view) {
   if (drEl) drEl.classList.add('active');
   document.getElementById('filterbar').style.display = (view === 'tasks') ? 'flex' : 'none';
   if (view === 'today') { document.getElementById('topbar-title').textContent = '今日のボード'; }
-  if (view === 'analytics') { document.getElementById('topbar-title').textContent = 'スタッフ分析'; }
+  if (view === 'analytics') { document.getElementById('topbar-title').textContent = 'エージェント分析'; }
   if (view === 'pending') { document.getElementById('topbar-title').textContent = 'タスク候補（音声抽出）'; }
   closeDetail();
   renderView();
@@ -1214,14 +1214,14 @@ function renderView() {
     document.getElementById('topbar-title').textContent = staffName;
     content.innerHTML = renderTaskList();
   } else if (currentView === 'staff') {
-    document.getElementById('topbar-title').textContent = 'スタッフ一覧';
+    document.getElementById('topbar-title').textContent = 'エージェント一覧';
     content.innerHTML = renderStaffView();
   } else if (currentView === 'today') {
     document.getElementById('topbar-title').textContent = '今日のボード';
     content.innerHTML = renderTodayBoard();
     initTodayBoard();
   } else if (currentView === 'analytics') {
-    document.getElementById('topbar-title').textContent = 'スタッフ分析';
+    document.getElementById('topbar-title').textContent = 'エージェント分析';
     content.innerHTML = renderAnalytics();
     initAnalytics();
   } else if (currentView === 'pending') {
@@ -1878,11 +1878,11 @@ function renderTodayBoard() {
     <div class="board-panel">
       <div class="board-panel-title">📥 タスクを選ぶ</div>
       <select class="board-select" id="board-staff-sel" onchange="updateBoardCandidates()">
-        <option value="">── スタッフ ──</option>
+        <option value="">── エージェント ──</option>
         ${allStaff.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
       </select>
       <div id="board-candidates" style="max-height:400px;overflow-y:auto;">
-        <div class="board-empty"><div class="board-empty-icon">👆</div>スタッフを選択</div>
+        <div class="board-empty"><div class="board-empty-icon">👆</div>エージェントを選択</div>
       </div>
     </div>
 
@@ -1939,7 +1939,7 @@ function updateBoardCandidates() {
   const el = document.getElementById('board-candidates');
   if (!el) return;
   if (!staffId) {
-    el.innerHTML = '<div class="board-empty"><div class="board-empty-icon">👆</div>スタッフを選択</div>';
+    el.innerHTML = '<div class="board-empty"><div class="board-empty-icon">👆</div>エージェントを選択</div>';
     return;
   }
   const tasks = allTasks.filter(t => t.staff_id === staffId && t.status !== 'done');
@@ -2154,7 +2154,7 @@ function renderAnalytics() {
       <div class="chart-wrap" style="height:200px;"><canvas id="chart-weekly"></canvas></div>
     </div>
     <div class="chart-card" style="grid-column:1/-1;" id="a-staff-breakdown" style="display:none;">
-      <h3>👥 スタッフ別タスク数</h3>
+      <h3>👥 エージェント別タスク数</h3>
       <div class="chart-wrap" style="height:200px;"><canvas id="chart-staff"></canvas></div>
     </div>
   </div>
@@ -2558,7 +2558,7 @@ function renderDrawerStaffNav() {
       <span class="icon">✅</span> 全タスク
     </div>
     <div class="drawer-item" onclick="switchView('staff'); closeDrawer();" id="dr-staff">
-      <span class="icon">👥</span> スタッフ
+      <span class="icon">👥</span> エージェント
     </div>
     <div class="drawer-item" onclick="switchView('today'); closeDrawer();" id="dr-today">
       <span class="icon">🗒️</span> 今日のボード
@@ -2571,7 +2571,7 @@ function renderDrawerStaffNav() {
       <span id="dr-pending-badge" style="display:none;background:var(--gold);color:#000;border-radius:10px;padding:1px 7px;font-size:11px;font-weight:700;margin-left:auto;"></span>
     </div>
   </div>
-  <div class="drawer-section">スタッフ</div>
+  <div class="drawer-section">エージェント</div>
   <div id="drawer-staff-nav"></div>
   <div style="padding:16px;margin-top:auto;border-top:1px solid var(--card-border);">
     <button class="btn btn-ghost" onclick="toggleMobileMode(); closeDrawer();" style="width:100%;justify-content:center;">🖥️ PC表示に切り替え</button>
