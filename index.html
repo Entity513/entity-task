@@ -621,18 +621,8 @@ body.mobile-mode::after {
   right: 0;
   background: linear-gradient(180deg, #47A0E8, #E8C547, #E87047, #47A0E8);
 }
-/* 下部グラデーション縁 */
-body.mobile-mode .main::after {
-  content: '';
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #E8C547, #E87047, #47A0E8, #E8C547);
-  z-index: 9999;
-  pointer-events: none;
-}
+/* 下部グラデーション縁（固定） */
+/* body::before/afterは既に左右で使用済みなのでHTMLタグで実装 */
 body.mobile-mode .main { height: auto; overflow: visible; }
 body.mobile-mode .content { overflow: visible; }
 
@@ -2402,6 +2392,8 @@ function toggleMobileMode() {
   const isMobile = document.body.classList.toggle('mobile-mode');
   localStorage.setItem('mobileMode', isMobile ? '1' : '0');
   updateMobileToggleBtn();
+  const bar = document.getElementById('mobile-bottom-bar');
+  if (bar) bar.style.display = isMobile ? 'block' : 'none';
 }
 function updateMobileToggleBtn() {
   const btn = document.getElementById('mobile-toggle-btn');
@@ -2416,6 +2408,8 @@ function updateMobileToggleBtn() {
   const isSmallScreen = window.innerWidth <= 768;
   if (savedMode === '1' || (savedMode === null && isSmallScreen)) {
     document.body.classList.add('mobile-mode');
+    const bar = document.getElementById('mobile-bottom-bar');
+    if (bar) bar.style.display = 'block';
   }
   updateMobileToggleBtn();
 })();
@@ -2483,5 +2477,6 @@ function renderDrawerStaffNav() {
     <button class="btn btn-ghost" onclick="toggleMobileMode(); closeDrawer();" style="width:100%;justify-content:center;">🖥️ PC表示に切り替え</button>
   </div>
 </div>
+<div id="mobile-bottom-bar" style="display:none;position:fixed;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#E8C547,#E87047,#47A0E8,#E8C547);z-index:9999;pointer-events:none;"></div>
 </body>
 </html>
