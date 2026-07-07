@@ -1373,6 +1373,15 @@ async function loadStaff() {
   staffList = data;
   const onlineIds = await getOnlineStaffIds();
   renderLoginCards(onlineIds);
+
+  // 前回のログイン状態を復元
+  try {
+    const savedId = localStorage.getItem('rebaseCurrentUserId');
+    if (savedId) {
+      const saved = staffList.find(s => s.id === savedId);
+      if (saved) { loginAs(saved); return; }
+    }
+  } catch(e) {}
 }
 
 function renderLoginCards(onlineIds = []) {
@@ -1414,6 +1423,8 @@ async function getOnlineStaffIds() {
 
 function loginAs(user) {
   currentUser = user;
+  // localStorageに保存して戻ってきた時も自動ログイン
+  try { localStorage.setItem('rebaseCurrentUserId', user.id); } catch(e) {}
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
 
@@ -1436,6 +1447,7 @@ function loginAs(user) {
 
 function logout() {
   currentUser = null;
+  try { localStorage.removeItem('rebaseCurrentUserId'); } catch(e) {}
   document.getElementById('app').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
   navigate('dashboard');
