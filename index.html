@@ -238,22 +238,28 @@ body{
 .btn-rainbow{
   position:relative;
   isolation:isolate;
-  background:rgba(20,19,17,0.95);
+  background:var(--bg3);
   color:var(--text);
   border:none;
   padding:10px 20px;
+  border-radius:8px;
 }
 .btn-rainbow::before{
   content:'';
   position:absolute;
-  top:0;
-  left:-2px;
-  right:-2px;
-  bottom:-2px;
+  inset:-1.5px;
   border-radius:10px;
   background:linear-gradient(135deg,#E8C547,#E87047,#e847a0,#47A0E8,#47E8A0,#E8C547);
   background-size:300% 300%;
-  animation:rainbowShift 3s linear infinite;
+  animation:rainbowShift 12s linear infinite;
+  z-index:-1;
+}
+.btn-rainbow::after{
+  content:'';
+  position:absolute;
+  inset:1.5px;
+  border-radius:7px;
+  background:var(--bg3);
   z-index:-1;
 }
 @keyframes rainbowShift{
