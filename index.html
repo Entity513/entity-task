@@ -1,0 +1,2355 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0E0D0B">
+<title>Entity Task | Re:Poker</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ja.js"></script>
+<style>
+.flatpickr-calendar {
+  background: #1E1A14 !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important;
+}
+.flatpickr-day {
+  color: #F0EDE6 !important;
+  border-radius: 6px !important;
+}
+.flatpickr-day:hover { background: rgba(232,197,71,0.15) !important; }
+.flatpickr-day.selected, .flatpickr-day.selected:hover {
+  background: #E8C547 !important;
+  border-color: #E8C547 !important;
+  color: #0A0908 !important;
+}
+.flatpickr-day.today { border-color: rgba(232,197,71,0.4) !important; }
+.flatpickr-months { background: #181510 !important; border-radius: 12px 12px 0 0 !important; }
+.flatpickr-month, .flatpickr-weekday { color: #B8B3A8 !important; fill: #B8B3A8 !important; }
+.flatpickr-prev-month, .flatpickr-next-month { fill: #B8B3A8 !important; }
+.flatpickr-prev-month:hover svg, .flatpickr-next-month:hover svg { fill: #E8C547 !important; }
+.numInputWrapper span { border-color: rgba(255,255,255,0.1) !important; }
+.numInputWrapper span:hover { background: rgba(255,255,255,0.05) !important; }
+.flatpickr-day.flatpickr-disabled { color: rgba(255,255,255,0.2) !important; }
+</style>
+<style>
+:root {
+  --bg:    #0A0908;
+  --bg2:   #111009;
+  --bg3:   #181510;
+  --bg4:   #1E1A14;
+  --text:  #F0EDE6;
+  --muted: #8A857C;
+  --muted2:#B8B3A8;
+  --gold:  #E8C547;
+  --green: #47E8A0;
+  --blue:  #47A0E8;
+  --orange:#E87047;
+  --purple:#A047E8;
+  --red:   #E84747;
+  --teal:  #47E8D4;
+  --border:rgba(255,255,255,0.06);
+  --border2:rgba(255,255,255,0.10);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{height:100%;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Hiragino Kaku Gothic Pro','Yu Gothic','Helvetica Neue',sans-serif;
+  height:100%;
+  display:flex;
+  overflow:hidden;
+}
+
+/* SIDEBAR */
+.sidebar{
+  width:220px;
+  min-width:220px;
+  background:var(--bg2);
+  border-right:1px solid var(--border);
+  display:flex;
+  flex-direction:column;
+  height:100vh;
+  overflow-y:auto;
+}
+.sidebar-logo{
+  padding:20px 20px 16px;
+  border-bottom:1px solid var(--border);
+}
+.logo-main{
+  font-size:15px;
+  font-weight:900;
+  color:var(--gold);
+  letter-spacing:0.05em;
+}
+.logo-sub{
+  font-size:9px;
+  color:var(--muted);
+  letter-spacing:0.2em;
+  margin-top:2px;
+}
+.sidebar-section{
+  padding:16px 12px 8px;
+  font-size:9px;
+  color:var(--muted);
+  letter-spacing:0.2em;
+  text-transform:uppercase;
+}
+.nav-item{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:9px 16px;
+  font-size:13px;
+  color:var(--muted2);
+  cursor:pointer;
+  border-radius:6px;
+  margin:1px 8px;
+  transition:all 0.15s;
+  text-decoration:none;
+}
+.nav-item:hover{background:rgba(255,255,255,0.04);color:var(--text);}
+.nav-item.active{background:rgba(232,197,71,0.1);color:var(--gold);}
+.nav-item .icon{font-size:14px;width:18px;text-align:center;}
+.staff-item{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:8px 16px;
+  font-size:12px;
+  color:var(--muted2);
+  cursor:pointer;
+  border-radius:6px;
+  margin:1px 8px;
+  transition:all 0.15s;
+}
+.staff-item:hover{background:rgba(255,255,255,0.04);color:var(--text);}
+.staff-item.active{background:rgba(255,255,255,0.06);color:var(--text);}
+.staff-dot{
+  width:8px;height:8px;border-radius:50%;flex-shrink:0;
+}
+.staff-avatar-sm {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.staff-avatar-lg {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.staff-count{
+  margin-left:auto;
+  font-size:10px;
+  color:var(--muted);
+  background:rgba(255,255,255,0.06);
+  padding:1px 6px;
+  border-radius:10px;
+}
+
+/* MAIN */
+.main{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  height:100vh;
+  overflow:hidden;
+}
+
+/* TOPBAR */
+.topbar{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  padding:0 24px;
+  height:56px;
+  border-bottom:1px solid var(--border);
+  background:var(--bg);
+  flex-shrink:0;
+}
+.topbar-title{
+  font-size:15px;
+  font-weight:700;
+  flex:1;
+}
+.topbar-actions{display:flex;gap:8px;}
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 14px;
+  border-radius:7px;
+  font-size:12px;
+  font-weight:600;
+  cursor:pointer;
+  border:none;
+  transition:all 0.15s;
+  letter-spacing:0.02em;
+}
+.btn-primary{background:var(--gold);color:#0A0908;}
+.btn-primary:hover{opacity:0.9;}
+.btn-ghost{background:rgba(255,255,255,0.05);color:var(--muted2);border:1px solid var(--border);}
+.btn-ghost:hover{background:rgba(255,255,255,0.08);color:var(--text);}
+
+/* FILTER BAR */
+.filterbar{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:10px 24px;
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+  flex-wrap:wrap;
+}
+.filter-btn{
+  padding:4px 12px;
+  border-radius:20px;
+  font-size:11px;
+  cursor:pointer;
+  border:1px solid var(--border);
+  color:var(--muted);
+  background:transparent;
+  transition:all 0.15s;
+}
+.filter-btn:hover,.filter-btn.active{
+  border-color:var(--gold);
+  color:var(--gold);
+  background:rgba(232,197,71,0.08);
+}
+.filter-sep{width:1px;height:16px;background:var(--border);}
+
+/* CONTENT */
+.content{
+  flex:1;
+  overflow-y:auto;
+  padding:24px;
+}
+
+/* DASHBOARD */
+.stats-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:12px;
+  margin-bottom:28px;
+}
+.stat-card{
+  background:var(--bg3);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:20px;
+}
+.stat-label{font-size:10px;color:var(--muted);letter-spacing:0.12em;margin-bottom:8px;}
+.stat-val{font-size:28px;font-weight:900;line-height:1;}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:4px;}
+
+/* SECTION */
+.section-title{
+  font-size:11px;
+  color:var(--muted);
+  letter-spacing:0.15em;
+  text-transform:uppercase;
+  margin-bottom:12px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* TASK LIST */
+.task-list{display:flex;flex-direction:column;gap:6px;margin-bottom:28px;}
+.task-item{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  background:var(--bg3);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:12px 16px;
+  cursor:pointer;
+  transition:all 0.15s;
+}
+.task-item:hover{border-color:var(--border2);background:var(--bg4);}
+.task-check{
+  width:18px;height:18px;
+  border-radius:5px;
+  border:1.5px solid var(--border2);
+  flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  transition:all 0.15s;
+}
+.task-check.done{
+  background:var(--green);
+  border-color:var(--green);
+  color:#0A0908;
+  font-size:11px;
+}
+.task-check:hover{border-color:var(--green);}
+.task-title{flex:1;font-size:13px;}
+.task-title.done{text-decoration:line-through;color:var(--muted);}
+.task-meta{
+  display:flex;align-items:center;gap:8px;flex-shrink:0;
+}
+.badge{
+  font-size:9px;
+  padding:2px 8px;
+  border-radius:20px;
+  font-weight:700;
+  letter-spacing:0.05em;
+}
+.badge-todo{background:rgba(255,255,255,0.06);color:var(--muted);}
+.badge-in_progress{background:rgba(71,160,232,0.15);color:var(--blue);border:1px solid rgba(71,160,232,0.3);}
+.badge-done{background:rgba(71,232,160,0.12);color:var(--green);border:1px solid rgba(71,232,160,0.25);}
+.badge-on_hold{background:rgba(232,112,71,0.12);color:var(--orange);border:1px solid rgba(232,112,71,0.25);}
+.badge-urgent{background:rgba(232,71,71,0.15);color:var(--red);border:1px solid rgba(232,71,71,0.3);}
+.badge-high{background:rgba(232,112,71,0.12);color:var(--orange);}
+.badge-medium{background:rgba(232,197,71,0.1);color:var(--gold);}
+.badge-low{background:rgba(255,255,255,0.05);color:var(--muted);}
+
+.task-staff{
+  display:flex;align-items:center;gap:5px;
+  font-size:11px;color:var(--muted);
+}
+.task-staff-dot{width:6px;height:6px;border-radius:50%;}
+.task-hours{font-size:11px;color:var(--muted);}
+.task-due{font-size:11px;}
+.task-due.overdue{color:var(--red);}
+.task-due.today{color:var(--gold);}
+.task-due.ok{color:var(--muted);}
+
+/* STAFF GRID */
+.staff-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:16px;
+}
+.staff-card{
+  background:var(--bg3);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:20px;
+  cursor:pointer;
+  transition:all 0.15s;
+}
+.staff-card:hover{border-color:var(--border2);transform:translateY(-2px);}
+.staff-card-top{
+  display:flex;align-items:center;gap:12px;margin-bottom:16px;
+}
+.staff-avatar{
+  width:40px;height:40px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;font-weight:900;
+  flex-shrink:0;
+}
+.staff-info h3{font-size:14px;font-weight:700;margin-bottom:2px;}
+.staff-info p{font-size:11px;color:var(--muted);}
+.staff-stats{
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;
+}
+.staff-stat{text-align:center;}
+.staff-stat-val{font-size:18px;font-weight:800;}
+.staff-stat-label{font-size:9px;color:var(--muted);letter-spacing:0.08em;}
+.progress-wrap{margin-top:12px;}
+.progress-label{
+  display:flex;justify-content:space-between;
+  font-size:10px;color:var(--muted);margin-bottom:4px;
+}
+.progress-bar{height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;}
+.progress-fill{height:100%;border-radius:2px;transition:width 0.4s;}
+
+/* MODAL */
+.modal-overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.7);
+  display:flex;align-items:center;justify-content:center;
+  z-index:1000;
+  padding:20px;
+}
+.modal{
+  background:var(--bg3);
+  border:1px solid var(--border2);
+  border-radius:16px;
+  padding:28px;
+  width:100%;
+  max-width:520px;
+  max-height:90vh;
+  overflow-y:auto;
+}
+.modal h2{
+  font-size:18px;font-weight:800;margin-bottom:20px;
+  display:flex;align-items:center;gap:10px;
+}
+.form-group{margin-bottom:16px;}
+.form-label{
+  font-size:11px;color:var(--muted);letter-spacing:0.1em;
+  text-transform:uppercase;margin-bottom:6px;display:block;
+}
+.form-input,.form-select,.form-textarea{
+  width:100%;
+  background:var(--bg2);
+  border:1px solid var(--border2);
+  color:var(--text);
+  border-radius:8px;
+  padding:10px 14px;
+  font-size:13px;
+  font-family:inherit;
+  outline:none;
+  transition:border-color 0.15s;
+}
+.form-input:focus,.form-select:focus,.form-textarea:focus{
+  border-color:rgba(232,197,71,0.5);
+}
+.form-select option{background:var(--bg2);}
+.form-textarea{resize:vertical;min-height:80px;line-height:1.6;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.modal-actions{
+  display:flex;gap:10px;margin-top:24px;justify-content:flex-end;
+}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:24px;right:24px;
+  background:var(--bg4);
+  border:1px solid var(--border2);
+  border-radius:10px;
+  padding:14px 20px;
+  font-size:13px;
+  z-index:2000;
+  transform:translateY(80px);
+  opacity:0;
+  transition:all 0.3s;
+  display:flex;align-items:center;gap:10px;
+}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.success{border-left:3px solid var(--green);}
+.toast.error{border-left:3px solid var(--red);}
+
+/* EMPTY */
+.empty{
+  text-align:center;padding:60px 20px;color:var(--muted);
+}
+.empty-icon{font-size:40px;margin-bottom:12px;}
+.empty p{font-size:13px;}
+
+/* DETAIL PANEL */
+.detail-panel{
+  width:360px;min-width:360px;
+  background:var(--bg2);
+  border-left:1px solid var(--border);
+  height:100vh;
+  overflow-y:auto;
+  padding:24px;
+}
+.detail-panel.hidden{display:none;}
+.detail-close{
+  float:right;cursor:pointer;color:var(--muted);
+  font-size:18px;padding:4px;
+}
+.detail-close:hover{color:var(--text);}
+.detail-title{
+  font-size:17px;font-weight:800;
+  margin-bottom:6px;padding-right:30px;
+}
+.detail-status{margin-bottom:20px;}
+.detail-section{margin-bottom:20px;}
+.detail-section-title{
+  font-size:10px;color:var(--muted);
+  letter-spacing:0.15em;text-transform:uppercase;
+  margin-bottom:10px;
+}
+.detail-row{
+  display:flex;justify-content:space-between;
+  align-items:center;
+  padding:8px 0;
+  border-bottom:1px solid var(--border);
+  font-size:13px;
+}
+.detail-row:last-child{border-bottom:none;}
+.detail-row-label{color:var(--muted);font-size:11px;}
+.log-item{
+  background:var(--bg3);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:12px;
+  margin-bottom:8px;
+  font-size:12px;
+}
+.log-date{font-size:10px;color:var(--muted);margin-bottom:4px;}
+.log-note{color:var(--muted2);line-height:1.6;}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px;}
+
+/* LOADING */
+.loading{
+  display:flex;align-items:center;justify-content:center;
+  height:200px;color:var(--muted);font-size:13px;gap:10px;
+}
+.spinner{
+  width:16px;height:16px;
+  border:2px solid var(--border2);
+  border-top-color:var(--gold);
+  border-radius:50%;
+  animation:spin 0.8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+@media(max-width:768px){
+  .sidebar{display:none;}
+  .detail-panel{display:none;}
+  body{overflow:auto;}
+  .main{height:auto;overflow:visible;}
+  .content{overflow:visible;}
+}
+
+/* ── BOTTOM NAV ── */
+/* ── DRAWER ── */
+.drawer-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 200;
+}
+.drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 280px;
+  background: var(--bg2, #1a1917);
+  border-right: 1px solid var(--card-border);
+  z-index: 201;
+  transform: translateX(-100%);
+  transition: transform 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.drawer.open { transform: translateX(0); }
+.drawer-overlay.open { display: block; }
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 16px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.drawer-logo { font-size: 16px; font-weight: 700; color: var(--gold); }
+.drawer-close {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+.drawer-nav { padding: 8px 0; }
+.drawer-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 14px;
+  border-radius: 0;
+  transition: background 0.15s;
+}
+.drawer-item:hover { background: rgba(255,255,255,0.04); }
+.drawer-item.active { color: var(--gold); background: rgba(232,197,71,0.08); }
+.drawer-item .icon { width: 20px; text-align: center; }
+.drawer-section {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 12px 16px 4px;
+}
+
+/* ── HAMBURGER BUTTON ── */
+.hamburger-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 22px;
+  cursor: pointer;
+  padding: 4px 8px;
+  margin-right: 8px;
+}
+#mobile-toggle-btn { }
+body.mobile-mode #mobile-toggle-btn { display: none !important; }
+body.mobile-mode .hamburger-btn { display: flex !important; align-items: center; visibility: visible !important; opacity: 1 !important; min-width: 40px; flex-shrink: 0; z-index: 10; }
+
+/* ── MOBILE MODE ── */
+body.mobile-mode .sidebar { display: none !important; }
+body.mobile-mode .main { margin-left: 0 !important; }
+body.mobile-mode .content { padding-bottom: 20px !important; }
+body.mobile-mode .topbar { padding: 10px 16px !important; padding-top: max(14px, env(safe-area-inset-top)) !important; }
+body.mobile-mode .task-card { padding: 14px 16px !important; }
+body.mobile-mode .task-title { font-size: 15px !important; }
+body.mobile-mode { overflow: auto; }
+body.mobile-mode .main { height: auto; overflow: visible; }
+body.mobile-mode .content { overflow: visible; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN OVERLAY -->
+<div id="login-overlay" style="
+  position:fixed;inset:0;z-index:9999;
+  background:#0A0908;
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;
+">
+  <div style="text-align:center;margin-bottom:40px;">
+    <div style="font-size:32px;font-weight:900;color:#E8C547;letter-spacing:-1px;">Entity Task</div>
+    <div style="font-size:11px;color:#8A857C;letter-spacing:.2em;margin-top:4px;">RE:POKER INTERNAL</div>
+  </div>
+  <div style="
+    background:#181510;border:1px solid rgba(255,255,255,0.08);
+    border-radius:18px;padding:36px 32px;width:100%;max-width:360px;
+  ">
+    <div style="font-size:13px;color:#B8B3A8;margin-bottom:20px;text-align:center;">あなたは誰ですか？</div>
+    <div id="login-staff-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-main">Entity Task</div>
+    <div class="logo-sub">Re:Poker Internal</div>
+  </div>
+
+  <div class="sidebar-section">メニュー</div>
+  <div class="nav-item active" onclick="switchView('dashboard')" id="nav-dashboard">
+    <span class="icon">🏠</span> ダッシュボード
+  </div>
+  <div class="nav-item" onclick="switchView('tasks')" id="nav-tasks">
+    <span class="icon">✅</span> 全タスク
+  </div>
+  <div class="nav-item" onclick="switchView('staff')" id="nav-staff">
+    <span class="icon">👥</span> スタッフ
+  </div>
+  <div class="nav-item" onclick="switchView('today')" id="nav-today">
+    <span class="icon">🗒️</span> 今日のボード
+  </div>
+  <div class="nav-item" onclick="switchView('analytics')" id="nav-analytics">
+    <span class="icon">📊</span> 分析
+  </div>
+  <div class="nav-item" onclick="switchView('pending')" id="nav-pending">
+    <span class="icon">🎙️</span> タスク候補
+    <span id="pending-badge" style="display:none;background:var(--gold);color:#000;border-radius:10px;padding:1px 7px;font-size:11px;font-weight:700;margin-left:auto;"></span>
+  </div>
+
+  <div class="sidebar-section">スタッフ</div>
+  <div id="staff-nav"></div>
+  <div id="user-badge" style="margin-top:auto;"></div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <button class="hamburger-btn" id="hamburger-btn" onclick="openDrawer()">☰</button>
+    <div class="topbar-title" id="topbar-title">ダッシュボード</div>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost" id="mobile-toggle-btn" onclick="toggleMobileMode()">📱 モバイル表示</button>
+      <button class="btn btn-ghost" onclick="loadAll()">🔄 更新</button>
+      <button class="btn btn-primary" onclick="openTaskModal()">＋ タスク追加</button>
+    </div>
+  </div>
+
+  <div class="filterbar" id="filterbar" style="display:none;">
+    <button class="filter-btn active" onclick="setFilter('all',this)">すべて</button>
+    <div class="filter-sep"></div>
+    <button class="filter-btn" onclick="setFilter('todo',this)">未着手</button>
+    <button class="filter-btn" onclick="setFilter('in_progress',this)">進行中</button>
+    <button class="filter-btn" onclick="setFilter('done',this)">完了</button>
+    <button class="filter-btn" onclick="setFilter('on_hold',this)">保留</button>
+    <div class="filter-sep"></div>
+    <button class="filter-btn" onclick="setPriority('urgent',this)">🔴 緊急</button>
+    <button class="filter-btn" onclick="setPriority('high',this)">🟠 高</button>
+  </div>
+
+  <div class="content" id="content">
+    <div class="loading"><div class="spinner"></div> 読み込み中...</div>
+  </div>
+</div>
+
+<!-- DETAIL PANEL -->
+<div class="detail-panel hidden" id="detail-panel">
+  <span class="detail-close" onclick="closeDetail()">✕</span>
+  <div id="detail-content"></div>
+</div>
+
+<!-- TASK MODAL -->
+<div class="modal-overlay" id="task-modal" style="display:none;" onclick="closeModalOnOverlay(event)">
+  <div class="modal">
+    <h2>✅ タスク追加</h2>
+    <div class="form-group">
+      <label class="form-label">タスク名 *</label>
+      <input class="form-input" id="f-title" placeholder="例：SNS投稿スケジュール作成" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">担当スタッフ *</label>
+      <select class="form-select" id="f-staff"></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">詳細</label>
+      <textarea class="form-textarea" id="f-desc" placeholder="タスクの詳細を入力..."></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">優先度</label>
+        <select class="form-select" id="f-priority">
+          <option value="low">低</option>
+          <option value="medium" selected>中</option>
+          <option value="high">高</option>
+          <option value="urgent">緊急</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">ステータス</label>
+        <select class="form-select" id="f-status">
+          <option value="todo" selected>未着手</option>
+          <option value="in_progress">進行中</option>
+          <option value="done">完了</option>
+          <option value="on_hold">保留</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">予定時間（h）</label>
+        <input class="form-input" type="number" id="f-est" placeholder="2.5" step="0.5" min="0" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">期限</label>
+        <div style="position:relative;">
+          <input class="form-input" id="f-due" placeholder="日付を選択..." readonly style="cursor:pointer;padding-right:36px;" />
+          <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none;">📅</span>
+        </div>
+        <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;" id="due-shortcuts">
+          <button type="button" class="filter-btn" onclick="setDueShortcut(0)">今日</button>
+          <button type="button" class="filter-btn" onclick="setDueShortcut(1)">明日</button>
+          <button type="button" class="filter-btn" onclick="setDueShortcut(3)">3日後</button>
+          <button type="button" class="filter-btn" onclick="setDueShortcut(7)">1週間後</button>
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">メインタスク（任意）</label>
+      <select class="form-select" id="f-parent">
+        <option value="">── なし（単独タスク）──</option>
+      </select>
+      <div style="font-size:11px;color:var(--muted);margin-top:5px;">選択すると、このタスクは選んだタスクのサブタスクになります</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeTaskModal()">キャンセル</button>
+      <button class="btn btn-primary" onclick="saveTask()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOG MODAL -->
+<div class="modal-overlay" id="log-modal" style="display:none;" onclick="closeModalOnOverlay(event)">
+  <div class="modal">
+    <h2>📝 作業ログ追加</h2>
+    <input type="hidden" id="log-task-id" />
+    <input type="hidden" id="log-staff-id" />
+    <div class="form-group">
+      <label class="form-label">作業時間（h）</label>
+      <input class="form-input" type="number" id="log-hours" placeholder="1.5" step="0.5" min="0" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">メモ</label>
+      <textarea class="form-textarea" id="log-note" placeholder="今日やったこと、進捗など..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeLogModal()">キャンセル</button>
+      <button class="btn btn-primary" onclick="saveLog()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'https://fictnppwiryureyzayxf.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_eh4EtX6pcZjRSDEUj3Yyjw_SUggcm-Q';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const STAFF_AVATARS = {
+  '183118a4-70e0-4b8d-9bae-9973988f1399': 'data:image/jpeg;base64,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',
+  'c3195ae4-e35b-4f70-8757-d04b804f8a1a': 'data:image/jpeg;base64,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',
+  '16242077-751b-4f90-a298-94b21f044a1f': 'data:image/jpeg;base64,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',
+  '75e3f234-31bc-41fa-97c3-650b1ca66bed': 'data:image/jpeg;base64,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',
+  '20cdebe7-c65d-4d7e-996e-c112462eff66': 'data:image/jpeg;base64,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',
+  'ea15a8ed-ff21-445c-bcae-558893f1d5ef': 'data:image/jpeg;base64,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',
+  '6c8c32ad-d473-4ca3-8eff-fe6f0b4a92f7': 'data:image/jpeg;base64,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',
+};
+let allStaff = [];
+let allTasks = [];
+let allSubtasks = [];
+let currentView = 'dashboard';
+let currentFilter = 'all';
+let currentPriority = 'all';
+let selectedStaffId = null;
+let pendingSubtasks = [];
+let currentUser = null; // ログイン中のスタッフ
+
+// ── LOGIN ──
+function showLogin() {
+  document.getElementById('login-overlay').style.display = 'flex';
+}
+
+function renderLoginStaff() {
+  const el = document.getElementById('login-staff-list');
+  if (!el) return;
+  el.innerHTML = allStaff.map(s => `
+    <div onclick="selectUser('${s.id}')" style="
+      display:flex;align-items:center;gap:12px;
+      padding:14px 18px;border-radius:10px;
+      background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);
+      cursor:pointer;transition:all .15s;
+    " onmouseover="this.style.borderColor='${s.color}';this.style.background='${s.color}12'"
+       onmouseout="this.style.borderColor='rgba(255,255,255,0.06)';this.style.background='rgba(255,255,255,0.03)'">
+      <div style="width:36px;height:36px;border-radius:9px;background:${s.color}20;color:${s.color};
+        display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;flex-shrink:0;">
+        ${s.name.charAt(0)}
+      </div>
+      <div>
+        <div style="font-size:14px;font-weight:700;">${s.name}</div>
+        <div style="font-size:11px;color:#8A857C;">${s.role}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function selectUser(staffId) {
+  currentUser = allStaff.find(s => s.id === staffId);
+  localStorage.setItem('entityCurrentUserId', staffId);
+  document.getElementById('login-overlay').style.display = 'none';
+  renderUserBadge();
+  renderView();
+}
+
+function renderUserBadge() {
+  const badge = document.getElementById('user-badge');
+  if (!badge || !currentUser) return;
+  badge.innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-top:1px solid rgba(255,255,255,0.06);margin-top:auto;">
+      <div style="width:28px;height:28px;border-radius:7px;background:${currentUser.color}20;color:${currentUser.color};
+        display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;flex-shrink:0;">
+        ${currentUser.name.charAt(0)}
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${currentUser.name}</div>
+        <div style="font-size:10px;color:#8A857C;">${currentUser.role}</div>
+      </div>
+      <div onclick="showLogin()" title="切り替え"
+        style="cursor:pointer;color:#8A857C;font-size:12px;flex-shrink:0;padding:4px;" title="ユーザー切替">⇄</div>
+    </div>
+  `;
+}
+
+// ── INIT ──
+async function loadAll() {
+  const [sRes, tRes, stRes] = await Promise.all([
+    sb.from('staff').select('*').order('created_at'),
+    sb.from('tasks').select('*').order('created_at', {ascending: false}),
+    sb.from('subtasks').select('*').order('created_at')
+  ]);
+  allStaff    = sRes.data || [];
+  allTasks    = tRes.data || [];
+  allSubtasks = stRes.data || [];
+
+  // 前回のユーザーを復元
+  const savedId = localStorage.getItem('entityCurrentUserId');
+  if (savedId) {
+    const saved = allStaff.find(s => s.id === savedId);
+    if (saved) { currentUser = saved; document.getElementById('login-overlay').style.display = 'none'; }
+    else showLogin();
+  } else {
+    showLogin();
+  }
+
+  renderLoginStaff();
+  renderUserBadge();
+  renderStaffNav();
+  updatePendingBadge();
+  renderView();
+}
+
+function getStaffPerformance(staffId) {
+  const now = new Date();
+  const d7 = new Date(now - 7*24*60*60*1000).toISOString();
+  const d1 = new Date(now - 24*60*60*1000).toISOString();
+  const recentDone = allTasks.filter(t =>
+    t.staff_id === staffId && t.status === 'done' && t.completed_at && t.completed_at >= d7
+  );
+  const todayDone = allTasks.filter(t =>
+    t.staff_id === staffId && t.status === 'done' && t.completed_at && t.completed_at >= d1
+  );
+  return { recentDone: recentDone.length, todayDone: todayDone.length };
+}
+
+function getStaffEmoji(staffId) {
+  const allCounts = allStaff.map(s => getStaffPerformance(s.id).recentDone);
+  const max = Math.max(...allCounts);
+  const { recentDone } = getStaffPerformance(staffId);
+  if (recentDone === 0) return '🧊';
+  if (max > 0 && recentDone >= max * 0.7) return '🔥';
+  return null;
+}
+
+function getOnlineStatus(staffId) {
+  const d2 = new Date(Date.now() - 2*24*60*60*1000).toISOString();
+  const recentActivity = allTasks.some(t =>
+    t.staff_id === staffId && t.status === 'done' && t.completed_at && t.completed_at >= d2
+  );
+  return recentActivity;
+}
+
+function renderStaffNav() {
+  const el = document.getElementById('staff-nav');
+  el.innerHTML = allStaff.map(s => {
+    const cnt = allTasks.filter(t => t.staff_id === s.id && t.status !== 'done').length;
+    const emoji = getStaffEmoji(s.id);
+    const online = getOnlineStatus(s.id);
+    const avatarSrc = STAFF_AVATARS[s.id];
+    return `<div class="staff-item" onclick="filterByStaff('${s.id}')" id="snav-${s.id}">
+      <div style="position:relative;flex-shrink:0;">
+        ${avatarSrc
+          ? `<img src="${avatarSrc}" class="staff-avatar-sm" style="width:24px;height:24px;border-radius:50%;object-fit:cover;flex-shrink:0;" />`
+          : `<div class="staff-dot" style="background:${s.color}"></div>`}
+        ${online ? `<div style="position:absolute;width:5px;height:5px;background:#47E8A0;border-radius:50%;bottom:-1px;right:-1px;border:1px solid var(--bg2);"></div>` : ''}
+      </div>
+      <span style="flex:1;">${s.name}</span>
+      ${emoji ? `<span style="font-size:13px;">${emoji}</span>` : ''}
+      ${cnt > 0 ? `<span class="staff-count">${cnt}</span>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ── VIEW SWITCH ──
+function switchView(view) {
+  currentView = view;
+  selectedStaffId = null;
+  currentFilter = 'all';
+  currentPriority = 'all';
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.getElementById('nav-'+view)?.classList.add('active');
+  document.querySelectorAll('.staff-item').forEach(el => el.classList.remove('active'));
+  // ドロワーメニューのactive更新
+  document.querySelectorAll('.drawer-item').forEach(el => el.classList.remove('active'));
+  const drEl = document.getElementById('dr-' + view);
+  if (drEl) drEl.classList.add('active');
+  document.getElementById('filterbar').style.display = (view === 'tasks') ? 'flex' : 'none';
+  if (view === 'today') { document.getElementById('topbar-title').textContent = '今日のボード'; }
+  if (view === 'analytics') { document.getElementById('topbar-title').textContent = 'スタッフ分析'; }
+  if (view === 'pending') { document.getElementById('topbar-title').textContent = 'タスク候補（音声抽出）'; }
+  closeDetail();
+  renderView();
+}
+
+function filterByStaff(id) {
+  currentView = 'tasks';
+  selectedStaffId = id;
+  currentFilter = 'all';
+  currentPriority = 'all';
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.staff-item').forEach(el => el.classList.remove('active'));
+  document.getElementById('snav-'+id)?.classList.add('active');
+  document.getElementById('filterbar').style.display = 'flex';
+  closeDetail();
+  renderView();
+}
+
+function renderView() {
+  const content = document.getElementById('content');
+  if (currentView === 'dashboard') {
+    document.getElementById('topbar-title').textContent = 'ダッシュボード';
+    content.innerHTML = renderDashboard();
+  } else if (currentView === 'tasks') {
+    const staffName = selectedStaffId
+      ? allStaff.find(s => s.id === selectedStaffId)?.name + ' のタスク'
+      : '全タスク';
+    document.getElementById('topbar-title').textContent = staffName;
+    content.innerHTML = renderTaskList();
+  } else if (currentView === 'staff') {
+    document.getElementById('topbar-title').textContent = 'スタッフ一覧';
+    content.innerHTML = renderStaffView();
+  } else if (currentView === 'today') {
+    document.getElementById('topbar-title').textContent = '今日のボード';
+    content.innerHTML = renderTodayBoard();
+    initTodayBoard();
+  } else if (currentView === 'analytics') {
+    document.getElementById('topbar-title').textContent = 'スタッフ分析';
+    content.innerHTML = renderAnalytics();
+    initAnalytics();
+  } else if (currentView === 'pending') {
+    document.getElementById('topbar-title').textContent = 'タスク候補（音声抽出）';
+    renderPending();
+  }
+}
+
+// ── DASHBOARD ──
+function renderDashboard() {
+  const total = allTasks.length;
+  const todo = allTasks.filter(t => t.status === 'todo').length;
+  const wip  = allTasks.filter(t => t.status === 'in_progress').length;
+  const done = allTasks.filter(t => t.status === 'done').length;
+  const urgent = allTasks.filter(t => t.priority === 'urgent' && t.status !== 'done').length;
+  const today = new Date().toISOString().split('T')[0];
+  const overdue = allTasks.filter(t => t.due_date && t.due_date < today && t.status !== 'done').length;
+  const totalEst = allTasks.reduce((s, t) => s + (t.estimated_hours || 0), 0);
+  const totalAct = allTasks.reduce((s, t) => s + (t.actual_hours || 0), 0);
+
+  const inProgressTasks = allTasks.filter(t => t.status === 'in_progress').slice(0, 8);
+  const todayTasks = allTasks.filter(t => t.due_date === today && t.status !== 'done').slice(0, 8);
+  const urgentTasks = allTasks.filter(t => t.priority === 'urgent' && t.status !== 'done').slice(0, 6);
+
+  return `
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">TOTAL TASKS</div>
+        <div class="stat-val" style="color:var(--gold)">${total}</div>
+        <div class="stat-sub">全タスク</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">IN PROGRESS</div>
+        <div class="stat-val" style="color:var(--blue)">${wip}</div>
+        <div class="stat-sub">進行中</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">TODO</div>
+        <div class="stat-val" style="color:var(--muted2)">${todo}</div>
+        <div class="stat-sub">未着手</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">DONE</div>
+        <div class="stat-val" style="color:var(--green)">${done}</div>
+        <div class="stat-sub">完了</div>
+      </div>
+      ${urgent > 0 ? `<div class="stat-card" style="border-color:rgba(232,71,71,0.3)">
+        <div class="stat-label">URGENT</div>
+        <div class="stat-val" style="color:var(--red)">${urgent}</div>
+        <div class="stat-sub">緊急タスク</div>
+      </div>` : ''}
+      ${overdue > 0 ? `<div class="stat-card" style="border-color:rgba(232,71,71,0.3)">
+        <div class="stat-label">OVERDUE</div>
+        <div class="stat-val" style="color:var(--red)">${overdue}</div>
+        <div class="stat-sub">期限超過</div>
+      </div>` : ''}
+      <div class="stat-card">
+        <div class="stat-label">TIME</div>
+        <div class="stat-val" style="color:var(--teal);font-size:20px;">${totalAct.toFixed(1)}h</div>
+        <div class="stat-sub">/ ${totalEst.toFixed(1)}h 予定</div>
+      </div>
+    </div>
+
+    ${urgentTasks.length > 0 ? `
+    <div class="section-title">🔴 緊急タスク</div>
+    <div class="task-list">${urgentTasks.map(t => taskRow(t)).join('')}</div>` : ''}
+
+    ${todayTasks.length > 0 ? `
+    <div class="section-title">📅 今日期限</div>
+    <div class="task-list">${todayTasks.map(t => taskRow(t)).join('')}</div>` : ''}
+
+    <div class="section-title">⚡ 進行中</div>
+    <div class="task-list">
+      ${inProgressTasks.length > 0 ? inProgressTasks.map(t => taskRow(t)).join('') :
+        '<div class="empty"><div class="empty-icon">🎯</div><p>進行中のタスクなし</p></div>'}
+    </div>
+  `;
+}
+
+// ── TASK LIST ──
+function renderTaskList() {
+  let tasks = allTasks;
+  if (selectedStaffId) tasks = tasks.filter(t => t.staff_id === selectedStaffId);
+  if (currentFilter !== 'all') tasks = tasks.filter(t => t.status === currentFilter);
+  if (currentPriority !== 'all') tasks = tasks.filter(t => t.priority === currentPriority);
+
+  const todo = tasks.filter(t => t.status === 'todo');
+  const wip  = tasks.filter(t => t.status === 'in_progress');
+  const hold = tasks.filter(t => t.status === 'on_hold');
+  const done = tasks.filter(t => t.status === 'done');
+
+  // 親タスクのみ表示（子タスクは親の下に入れる）
+  const renderSection = (title, items) => {
+    const parents = items.filter(t => !t.parent_task_id);
+    if (parents.length === 0) return '';
+    return `<div class="section-title">${title} (${items.length})</div>
+    <div class="task-list">${parents.map(t => {
+      const children = allTasks.filter(c => c.parent_task_id === t.id);
+      return taskRow(t) + (children.length > 0 ?
+        `<div style="padding-left:20px;display:flex;flex-direction:column;gap:4px;margin-top:-2px;">
+          ${children.map(c => taskRow(c, true)).join('')}
+        </div>` : '');
+    }).join('')}</div>`;
+  };
+
+  if (currentFilter !== 'all' || currentPriority !== 'all') {
+    return tasks.length === 0
+      ? '<div class="empty"><div class="empty-icon">✅</div><p>タスクなし</p></div>'
+      : `<div class="task-list">${tasks.filter(t => !t.parent_task_id).map(t => taskRow(t)).join('')}</div>`;
+  }
+
+  return renderSection('⚡ 進行中', wip)
+    + renderSection('📋 未着手', todo)
+    + renderSection('⏸ 保留', hold)
+    + renderSection('✅ 完了', done)
+    || '<div class="empty"><div class="empty-icon">🎉</div><p>タスクなし</p></div>';
+}
+
+function taskRow(t, isChild = false) {
+  const staff = allStaff.find(s => s.id === t.staff_id);
+  const today = new Date().toISOString().split('T')[0];
+  let dueClass = 'ok', dueText = '';
+  if (t.due_date) {
+    dueText = formatDate(t.due_date);
+    if (t.due_date < today && t.status !== 'done') dueClass = 'overdue';
+    else if (t.due_date === today) dueClass = 'today';
+  }
+  const statusLabel = {todo:'未着手', in_progress:'進行中', done:'完了', on_hold:'保留'}[t.status] || t.status;
+  const priorityLabel = {low:'低', medium:'中', high:'高', urgent:'緊急'}[t.priority] || t.priority;
+
+  // サブタスク進捗（子タスクで計算）
+  const subs = allTasks.filter(s => s.parent_task_id === t.id);
+  const subDone = subs.filter(s => s.status === 'done').length;
+  const subTotal = subs.length;
+  const subPct = subTotal > 0 ? Math.round(subDone / subTotal * 100) : null;
+
+  return `<div class="task-item" onclick="openDetail('${t.id}')" style="flex-direction:column;align-items:stretch;gap:8px;${isChild?'border-left:2px solid rgba(71,160,232,0.3);border-radius:0 10px 10px 0;':''}"
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div class="task-check ${t.status === 'done' ? 'done' : ''}"
+        onclick="event.stopPropagation();toggleDone('${t.id}','${t.status}')">
+        ${t.status === 'done' ? '✓' : ''}
+      </div>
+      <div class="task-title ${t.status === 'done' ? 'done' : ''}" style="flex:1;">${t.title}</div>
+      <div class="task-meta">
+        <span class="badge badge-${t.priority}">${priorityLabel}</span>
+        <span class="badge badge-${t.status}">${statusLabel}</span>
+        ${staff ? `<span class="task-staff">
+          <span class="task-staff-dot" style="background:${staff.color}"></span>
+          ${staff.name}
+        </span>` : ''}
+        ${t.estimated_hours ? `<span class="task-hours">${t.actual_hours||0}/${t.estimated_hours}h</span>` : ''}
+        ${dueText ? `<span class="task-due ${dueClass}">${dueText}</span>` : ''}
+      </div>
+    </div>
+    ${subTotal > 0 ? `
+    <div style="padding-left:30px;">
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:3px;">
+        <span>サブタスク ${subDone}/${subTotal}</span>
+        <span style="color:${subPct===100?'var(--green)':'var(--muted)'}">${subPct}%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width:${subPct}%;background:${subPct===100?'var(--green)':'var(--blue)'};"></div>
+      </div>
+    </div>` : ''}
+  </div>`;
+}
+
+// ── STAFF VIEW ──
+function renderStaffView() {
+  return `<div class="staff-grid">${allStaff.map(s => {
+    const stasks = allTasks.filter(t => t.staff_id === s.id);
+    const total = stasks.length;
+    const done = stasks.filter(t => t.status === 'done').length;
+    const wip  = stasks.filter(t => t.status === 'in_progress').length;
+    const todo = stasks.filter(t => t.status === 'todo').length;
+    const pct  = total > 0 ? Math.round(done / total * 100) : 0;
+    const est  = stasks.reduce((a, t) => a + (t.estimated_hours||0), 0);
+    const act  = stasks.reduce((a, t) => a + (t.actual_hours||0), 0);
+    const initials = s.name.charAt(0);
+    const emoji = getStaffEmoji(s.id);
+    const online = getOnlineStatus(s.id);
+    const { recentDone, todayDone } = getStaffPerformance(s.id);
+    return `<div class="staff-card" onclick="filterByStaff('${s.id}')">
+      <div class="staff-card-top">
+        <div style="position:relative;flex-shrink:0;">
+          ${STAFF_AVATARS[s.id]
+            ? `<img src="${STAFF_AVATARS[s.id]}" class="staff-avatar-lg" style="width:48px;height:48px;border-radius:50%;object-fit:cover;" />`
+            : `<div class="staff-avatar" style="background:${s.color}20;color:${s.color}">${initials}</div>`}
+          ${online ? `<div style="position:absolute;width:9px;height:9px;background:#47E8A0;border-radius:50%;bottom:0;right:0;border:2px solid var(--bg3);"></div>` : ''}
+        </div>
+        <div class="staff-info" style="flex:1;">
+          <h3 style="display:flex;align-items:center;gap:6px;">${s.name} ${emoji ? `<span style="font-size:16px;">${emoji}</span>` : ''}</h3>
+          <p>${s.role}</p>
+        </div>
+        ${todayDone > 0 ? `<div style="font-size:10px;color:var(--green);background:rgba(71,232,160,.1);border:1px solid rgba(71,232,160,.2);padding:2px 8px;border-radius:10px;flex-shrink:0;">今日${todayDone}件</div>` : ''}
+      </div>
+      <div class="staff-stats">
+        <div class="staff-stat">
+          <div class="staff-stat-val" style="color:var(--blue)">${wip}</div>
+          <div class="staff-stat-label">進行中</div>
+        </div>
+        <div class="staff-stat">
+          <div class="staff-stat-val" style="color:var(--muted2)">${todo}</div>
+          <div class="staff-stat-label">未着手</div>
+        </div>
+        <div class="staff-stat">
+          <div class="staff-stat-val" style="color:var(--green)">${done}</div>
+          <div class="staff-stat-label">完了</div>
+        </div>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-label">
+          <span>達成率</span>
+          <span style="color:${s.color}">${pct}%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:${pct}%;background:${s.color}"></div>
+        </div>
+      </div>
+      ${est > 0 ? `<div style="font-size:11px;color:var(--muted);margin-top:10px;">⏱ ${act.toFixed(1)}h / ${est.toFixed(1)}h</div>` : ''}
+    </div>`;
+  }).join('')}</div>`;
+}
+
+// ── DETAIL ──
+async function openDetail(taskId) {
+  const t = allTasks.find(x => x.id === taskId);
+  if (!t) return;
+  const staff = allStaff.find(s => s.id === t.staff_id);
+  const panel = document.getElementById('detail-panel');
+  panel.classList.remove('hidden');
+
+  const { data: logs } = await sb.from('task_logs')
+    .select('*').eq('task_id', taskId).order('logged_date', {ascending: false});
+
+  const subs = allTasks.filter(s => s.parent_task_id === taskId);
+  const subDone = subs.filter(s => s.status === 'done').length;
+  const subPct = subs.length > 0 ? Math.round(subDone / subs.length * 100) : 0;
+
+  const statusLabel = {todo:'未着手', in_progress:'進行中', done:'完了', on_hold:'保留'}[t.status] || t.status;
+  const priorityLabel = {low:'低', medium:'中', high:'高', urgent:'緊急'}[t.priority] || t.priority;
+
+  document.getElementById('detail-content').innerHTML = `
+    <div class="detail-title">${t.title}</div>
+    <div class="detail-status">
+      <span class="badge badge-${t.status}">${statusLabel}</span>
+      <span class="badge badge-${t.priority}" style="margin-left:6px">${priorityLabel}</span>
+    </div>
+    ${t.description ? `<p style="font-size:13px;color:var(--muted2);line-height:1.7;margin-bottom:20px">${t.description}</p>` : ''}
+    <div class="detail-section">
+      <div class="detail-section-title">詳細</div>
+      <div class="detail-row">
+        <span class="detail-row-label">担当</span>
+        <span style="display:flex;align-items:center;gap:6px">
+          ${staff ? `<span style="width:8px;height:8px;border-radius:50%;background:${staff.color};display:inline-block"></span>${staff.name}` : '－'}
+        </span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-row-label">期限</span>
+        <span>${t.due_date ? formatDate(t.due_date) : '未設定'}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-row-label">予定時間</span>
+        <span>${t.estimated_hours ? t.estimated_hours + 'h' : '未設定'}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-row-label">実績時間</span>
+        <span style="color:var(--teal)">${t.actual_hours ? t.actual_hours + 'h' : '0h'}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-row-label">作成日</span>
+        <span>${formatDate(t.created_at)}</span>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title">ステータス変更</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        ${['todo','in_progress','done','on_hold'].map(s => {
+          const l = {todo:'未着手', in_progress:'進行中', done:'完了', on_hold:'保留'}[s];
+          return `<button class="btn ${t.status===s?'btn-primary':'btn-ghost'}" style="font-size:11px;padding:5px 10px"
+            onclick="changeStatus('${taskId}','${s}')">${l}</button>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title">サブタスク</div>
+      <div id="detail-subtasks">
+        ${subs.length > 0 ? `
+          <div style="margin-bottom:10px;">
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:4px;">
+              <span>${subDone}/${subs.length} 完了</span>
+              <span style="color:${subPct===100?'var(--green)':'var(--gold)'}">${subPct}%</span>
+            </div>
+            <div class="progress-bar" style="height:6px;">
+              <div class="progress-fill" style="width:${subPct}%;background:${subPct===100?'var(--green)':'var(--gold)'}"></div>
+            </div>
+          </div>
+          ${subs.map(s => {
+            const sStaff = allStaff.find(st => st.id === s.staff_id);
+            const sLabel = {todo:'未着手', in_progress:'進行中', done:'完了', on_hold:'保留'}[s.status];
+            return `
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer;"
+              onclick="openDetail('${s.id}')">
+              <div onclick="event.stopPropagation();toggleSubtaskStatus('${s.id}','${s.status}','${taskId}')"
+                style="width:16px;height:16px;border-radius:4px;border:1.5px solid ${s.status==='done'?'var(--green)':'var(--border2)'};
+                background:${s.status==='done'?'var(--green)':'transparent'};cursor:pointer;display:flex;align-items:center;justify-content:center;
+                flex-shrink:0;font-size:10px;color:#0A0908;">
+                ${s.status==='done' ? '✓' : ''}
+              </div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:12px;${s.status==='done'?'text-decoration:line-through;color:var(--muted);':''}">${s.title}</div>
+                ${sStaff ? `<div style="font-size:10px;color:var(--muted);margin-top:2px;">${sStaff.name}</div>` : ''}
+              </div>
+              <span class="badge badge-${s.status}" style="flex-shrink:0;">${sLabel}</span>
+            </div>`;
+          }).join('')}` :
+          '<div style="font-size:12px;color:var(--muted);text-align:center;padding:12px 0;">サブタスクなし</div>'}
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title">作業ログ</div>
+      <button class="btn btn-ghost" style="width:100%;margin-bottom:12px;font-size:12px"
+        onclick="openLogModal('${taskId}','${t.staff_id}')">＋ ログ追加</button>
+      ${logs && logs.length > 0 ? logs.map(l => `
+        <div class="log-item">
+          <div class="log-date">${formatDate(l.logged_date)} — ${l.hours_worked}h</div>
+          ${l.note ? `<div class="log-note">${l.note}</div>` : ''}
+        </div>`).join('') : '<div style="font-size:12px;color:var(--muted);text-align:center;padding:16px">ログなし</div>'}
+    </div>
+
+    <div style="margin-top:8px">
+      <button class="btn btn-ghost" style="width:100%;color:var(--red);border-color:rgba(232,71,71,0.3)"
+        onclick="deleteTask('${taskId}')">🗑 タスク削除</button>
+    </div>
+  `;
+}
+
+function closeDetail() {
+  document.getElementById('detail-panel').classList.add('hidden');
+}
+
+async function changeStatus(taskId, status) {
+  const upd = {status};
+  if (status === 'done') upd.completed_at = new Date().toISOString();
+  const { error } = await sb.from('tasks').update(upd).eq('id', taskId);
+  if (!error) { showToast('ステータスを更新しました', 'success'); await loadAll(); openDetail(taskId); }
+}
+
+async function toggleDone(taskId, currentStatus) {
+  const newStatus = currentStatus === 'done' ? 'todo' : 'done';
+  await sb.from('tasks').update({status: newStatus}).eq('id', taskId);
+  await loadAll();
+  renderView();
+}
+
+// ── SUBTASK（parent_task_id方式）──
+async function toggleSubtaskStatus(subId, currentStatus, parentTaskId) {
+  const newStatus = currentStatus === 'done' ? 'todo' : 'done';
+  await sb.from('tasks').update({ status: newStatus }).eq('id', subId);
+  await loadAll();
+  openDetail(parentTaskId);
+}
+
+// ── PENDING SUBTASKS (未使用・互換用) ──
+function addSubtaskField() {}
+function removePendingSubtask(idx) {}
+function renderPendingSubtasks() {}
+
+// ── DUE SHORTCUT ──
+function setDueShortcut(days) {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  if (duePicker) duePicker.setDate(d, true);
+  document.querySelectorAll('#due-shortcuts .filter-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+// ── TASK MODAL ──
+function openTaskModal() {
+  const sel = document.getElementById('f-staff');
+  sel.innerHTML = allStaff.map(s => `<option value="${s.id}">${s.name} (${s.role})</option>`).join('');
+  // ログインユーザー優先、次にselectしたスタッフ
+  if (currentUser) sel.value = currentUser.id;
+  else if (selectedStaffId) sel.value = selectedStaffId;
+
+  // メインタスク候補（未完了のトップレベルタスクのみ）
+  const parentSel = document.getElementById('f-parent');
+  const candidates = allTasks.filter(t => t.status !== 'done' && !t.parent_task_id);
+  parentSel.innerHTML = '<option value="">── なし（単独タスク）──</option>'
+    + candidates.map(t => {
+        const staff = allStaff.find(s => s.id === t.staff_id);
+        return `<option value="${t.id}">${t.title}${staff ? ' (' + staff.name + ')' : ''}</option>`;
+      }).join('');
+
+  pendingSubtasks = [];
+  renderPendingSubtasks();
+  document.getElementById('task-modal').style.display = 'flex';
+  setTimeout(() => initDatePicker(), 50);
+}
+function closeTaskModal() {
+  document.getElementById('task-modal').style.display = 'none';
+  ['f-title','f-desc','f-est'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-parent').value = '';
+  if (duePicker) duePicker.clear();
+  pendingSubtasks = [];
+  renderPendingSubtasks();
+  document.querySelectorAll('#due-shortcuts .filter-btn').forEach(b => b.classList.remove('active'));
+}
+async function saveTask() {
+  const title = document.getElementById('f-title').value.trim();
+  if (!title) { showToast('タスク名を入力してください', 'error'); return; }
+  const parentId = document.getElementById('f-parent').value || null;
+  const task = {
+    title,
+    description: document.getElementById('f-desc').value.trim() || null,
+    staff_id: document.getElementById('f-staff').value,
+    priority: document.getElementById('f-priority').value,
+    status: document.getElementById('f-status').value,
+    estimated_hours: parseFloat(document.getElementById('f-est').value) || null,
+    due_date: document.getElementById('f-due').value || null,
+    parent_task_id: parentId,
+  };
+
+  const { data, error } = await sb.from('tasks').insert(task).select();
+  if (error) { showToast('保存に失敗しました', 'error'); return; }
+
+  showToast('タスクを追加しました ✅', 'success');
+  closeTaskModal();
+  await loadAll();
+  renderView();
+}
+
+// ── LOG MODAL ──
+function openLogModal(taskId, staffId) {
+  document.getElementById('log-task-id').value = taskId;
+  document.getElementById('log-staff-id').value = staffId;
+  document.getElementById('log-modal').style.display = 'flex';
+}
+function closeLogModal() {
+  document.getElementById('log-modal').style.display = 'none';
+  document.getElementById('log-hours').value = '';
+  document.getElementById('log-note').value = '';
+}
+async function saveLog() {
+  const taskId = document.getElementById('log-task-id').value;
+  const staffId = document.getElementById('log-staff-id').value;
+  const hours = parseFloat(document.getElementById('log-hours').value) || 0;
+  const note = document.getElementById('log-note').value.trim();
+  const { error: logErr } = await sb.from('task_logs').insert({
+    task_id: taskId, staff_id: staffId, hours_worked: hours, note: note || null
+  });
+  if (logErr) { showToast('保存に失敗しました', 'error'); return; }
+  // 実績時間を更新
+  const task = allTasks.find(t => t.id === taskId);
+  const newAct = (task?.actual_hours || 0) + hours;
+  await sb.from('tasks').update({actual_hours: newAct}).eq('id', taskId);
+  showToast('ログを追加しました ✅', 'success');
+  closeLogModal();
+  await loadAll();
+  openDetail(taskId);
+}
+
+async function deleteTask(taskId) {
+  if (!confirm('このタスクを削除しますか？')) return;
+  await sb.from('task_logs').delete().eq('task_id', taskId);
+  await sb.from('subtasks').delete().eq('task_id', taskId);
+  await sb.from('tasks').delete().eq('id', taskId);
+  showToast('タスクを削除しました', 'success');
+  closeDetail();
+  await loadAll();
+  renderView();
+}
+
+// ── FILTER ──
+function setFilter(f, el) {
+  currentFilter = f; currentPriority = 'all';
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderView();
+}
+function setPriority(p, el) {
+  currentPriority = (currentPriority === p) ? 'all' : p;
+  currentFilter = 'all';
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  if (currentPriority !== 'all') el.classList.add('active');
+  renderView();
+}
+
+// ── UTILS ──
+function formatDate(d) {
+  if (!d) return '';
+  const date = new Date(d);
+  return `${date.getMonth()+1}/${date.getDate()}`;
+}
+function showToast(msg, type='success') {
+  const el = document.getElementById('toast');
+  el.textContent = (type === 'success' ? '✅ ' : '❌ ') + msg;
+  el.className = `toast ${type} show`;
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+function closeModalOnOverlay(e) {
+  if (e.target === e.currentTarget) {
+    closeTaskModal();
+    closeLogModal();
+  }
+}
+
+// ══════════════════════════════
+// 今日のボード
+// ══════════════════════════════
+let todayBoardOrder = JSON.parse(localStorage.getItem('todayBoardOrder') || '[]');
+let todayBoardDone  = JSON.parse(localStorage.getItem('todayBoardDone')  || '[]');
+
+function renderTodayBoard() {
+  const now = new Date();
+  const today = now.toLocaleDateString('ja-JP', {month:'long', day:'numeric', weekday:'short'});
+  const hour = now.getHours();
+  const userName = currentUser ? currentUser.name : 'みんな';
+
+  // Entityメッセージ
+  let entityMsg = '';
+  let entityIcon = '⚡';
+  if (hour >= 5 && hour < 10) {
+    entityIcon = '🌅';
+    entityMsg = `おはよう、${userName}。今日も1日、最初の5分で決めよう。今日やることをボードに並べて、1番から潰していけ。`;
+  } else if (hour >= 10 && hour < 14) {
+    entityIcon = '🔥';
+    entityMsg = `${userName}、午前中どうだった？まだ残ってるタスク、優先順位を確認して後半に備えろ。`;
+  } else if (hour >= 14 && hour < 18) {
+    entityIcon = '⚡';
+    entityMsg = `${userName}、午後だ。今日中に終わらせるもの、絞り込んで集中しろ。残りで何が一番インパクトでかい？`;
+  } else {
+    entityIcon = '🌙';
+    entityMsg = `${userName}、今日お疲れ。完了したタスクを確認して、明日に持ち越すものを整理しておけ。`;
+  }
+
+  return `
+  <style>
+    .today-board-grid { display:grid; grid-template-columns:320px 1fr; gap:20px; }
+    @media(max-width:800px){ .today-board-grid{ grid-template-columns:1fr; } }
+    .board-panel {
+      background:var(--bg3); border:1px solid var(--border); border-radius:14px; padding:20px;
+    }
+    .board-panel-title { font-size:11px; color:var(--muted); letter-spacing:.15em; text-transform:uppercase; margin-bottom:14px; }
+    .board-task {
+      display:flex; align-items:center; gap:10px;
+      padding:11px 12px; margin-bottom:6px;
+      background:var(--bg2); border:1px solid var(--border); border-radius:9px;
+      transition:all .15s; user-select:none;
+    }
+    .board-task:hover { border-color:var(--border2); background:var(--bg4); }
+    .board-task.done-item { opacity:.4; }
+    .board-task.done-item .bt-title { text-decoration:line-through; color:var(--muted); }
+    .board-task.sortable-ghost { opacity:.3; background:rgba(232,197,71,.08); border-color:var(--gold); }
+    .board-task.sortable-chosen { box-shadow:0 4px 20px rgba(0,0,0,.4); }
+    .drag-handle {
+      color:var(--muted); font-size:14px; cursor:grab; flex-shrink:0;
+      padding:2px 4px; border-radius:4px; transition:color .15s;
+      touch-action: none;
+    }
+    .drag-handle:hover { color:var(--text); }
+    .drag-handle:active { cursor:grabbing; }
+    .bt-check {
+      width:18px; height:18px; border-radius:5px; border:1.5px solid var(--border2);
+      flex-shrink:0; display:flex; align-items:center; justify-content:center;
+      font-size:11px; transition:all .15s; cursor:pointer;
+    }
+    .bt-check:hover { border-color:var(--green); }
+    .bt-check.done { background:var(--green); border-color:var(--green); color:#0a0908; }
+    .bt-title { font-size:13px; flex:1; line-height:1.4; }
+    .bt-sub { font-size:10px; color:var(--muted); margin-top:2px; }
+    .priority-num {
+      width:20px; height:20px; border-radius:5px; background:rgba(232,197,71,.12);
+      color:var(--gold); font-size:10px; font-weight:900;
+      display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    }
+    .board-add-btn {
+      width:100%; padding:10px; border-radius:8px; border:1px dashed var(--border2);
+      background:transparent; color:var(--muted); font-size:12px; cursor:pointer; margin-top:8px;
+      transition:all .15s;
+    }
+    .board-add-btn:hover { border-color:var(--gold); color:var(--gold); }
+    .board-select {
+      width:100%; background:var(--bg2); border:1px solid var(--border2); color:var(--text);
+      border-radius:8px; padding:9px 12px; font-size:12px; font-family:inherit; outline:none; margin-bottom:8px;
+    }
+    .board-empty { text-align:center; padding:40px 10px; color:var(--muted); font-size:13px; }
+    .board-empty-icon { font-size:32px; margin-bottom:8px; }
+    .board-stats { display:flex; gap:10px; margin-bottom:20px; }
+    .board-stat { background:var(--bg3); border:1px solid var(--border); border-radius:10px; padding:14px; flex:1; text-align:center; }
+    .board-stat-val { font-size:24px; font-weight:900; line-height:1; }
+    .board-stat-label { font-size:10px; color:var(--muted); margin-top:3px; letter-spacing:.06em; }
+    .entity-msg {
+      background:rgba(232,197,71,.06); border:1px solid rgba(232,197,71,.2);
+      border-radius:14px; padding:18px 20px; margin-bottom:20px;
+      display:flex; gap:14px; align-items:flex-start;
+    }
+    .entity-msg-icon { font-size:24px; flex-shrink:0; }
+    .entity-msg-text { font-size:13px; line-height:1.8; color:var(--muted2); }
+    .entity-msg-label { font-size:10px; color:var(--gold); letter-spacing:.15em; margin-bottom:5px; }
+    .progress-wrap-board { margin-bottom:20px; }
+    .progress-track { height:8px; background:rgba(255,255,255,.05); border-radius:4px; overflow:hidden; margin-top:6px; }
+    .progress-track-fill { height:100%; border-radius:4px; transition:width .5s; }
+    .task-chip {
+      display:flex; align-items:center; gap:8px; padding:9px 12px;
+      background:var(--bg2); border:1px solid var(--border); border-radius:8px;
+      cursor:pointer; transition:all .15s; margin-bottom:5px; font-size:12px;
+    }
+    .task-chip:hover { border-color:var(--gold); background:rgba(232,197,71,.05); }
+    .task-chip-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+    .task-chip-added { opacity:.4; pointer-events:none; }
+  </style>
+
+  <!-- Entityメッセージ -->
+  <div class="entity-msg">
+    <div class="entity-msg-icon">${entityIcon}</div>
+    <div>
+      <div class="entity-msg-label">ENTITY</div>
+      <div class="entity-msg-text">${entityMsg}</div>
+    </div>
+  </div>
+
+  <!-- 統計 -->
+  <div class="board-stats">
+    <div class="board-stat">
+      <div class="board-stat-val" id="bs-total" style="color:var(--gold)">0</div>
+      <div class="board-stat-label">今日のタスク</div>
+    </div>
+    <div class="board-stat">
+      <div class="board-stat-val" id="bs-done" style="color:var(--green)">0</div>
+      <div class="board-stat-label">完了</div>
+    </div>
+    <div class="board-stat">
+      <div class="board-stat-val" id="bs-left" style="color:var(--blue)">0</div>
+      <div class="board-stat-label">残り</div>
+    </div>
+  </div>
+
+  <!-- 進捗バー -->
+  <div class="progress-wrap-board">
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);">
+      <span>今日の達成率</span><span id="bs-pct" style="color:var(--gold)">0%</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-track-fill" id="bs-bar" style="width:0%;background:var(--gold);"></div>
+    </div>
+  </div>
+
+  <div class="today-board-grid">
+    <!-- 左: タスク選択 -->
+    <div class="board-panel">
+      <div class="board-panel-title">📥 タスクを選ぶ</div>
+      <select class="board-select" id="board-staff-sel" onchange="updateBoardCandidates()">
+        <option value="">── スタッフ ──</option>
+        ${allStaff.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
+      </select>
+      <div id="board-candidates" style="max-height:400px;overflow-y:auto;">
+        <div class="board-empty"><div class="board-empty-icon">👆</div>スタッフを選択</div>
+      </div>
+    </div>
+
+    <!-- 右: 今日のボード -->
+    <div class="board-panel">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div class="board-panel-title" style="margin-bottom:0;">🗒️ 今日やること</div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;" onclick="clearDoneFromBoard()">✕ 完了を消す</button>
+          <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;color:var(--red);border-color:rgba(232,71,71,.3)" onclick="clearAllBoard()">全消去</button>
+        </div>
+      </div>
+      <div id="board-list"></div>
+    </div>
+  </div>
+  `;
+}
+
+let sortableInstance = null;
+
+function initTodayBoard() {
+  const staffSel = document.getElementById('board-staff-sel');
+  if (staffSel && currentUser) {
+    staffSel.value = currentUser.id;
+    updateBoardCandidates();
+  }
+  renderBoardList();
+  updateBoardStats();
+  initSortable();
+}
+
+function initSortable() {
+  const el = document.getElementById('board-list');
+  if (!el || typeof Sortable === 'undefined') return;
+  if (sortableInstance) sortableInstance.destroy();
+  sortableInstance = Sortable.create(el, {
+    animation: 180,
+    handle: '.drag-handle',
+    ghostClass: 'sortable-ghost',
+    chosenClass: 'sortable-chosen',
+    onEnd: function(evt) {
+      const moved = todayBoardOrder.splice(evt.oldIndex, 1)[0];
+      todayBoardOrder.splice(evt.newIndex, 0, moved);
+      saveBoardState();
+      renderBoardList();
+      updateBoardStats();
+      initSortable();
+    }
+  });
+}
+
+function updateBoardCandidates() {
+  const staffId = document.getElementById('board-staff-sel')?.value;
+  const el = document.getElementById('board-candidates');
+  if (!el) return;
+  if (!staffId) {
+    el.innerHTML = '<div class="board-empty"><div class="board-empty-icon">👆</div>スタッフを選択</div>';
+    return;
+  }
+  const tasks = allTasks.filter(t => t.staff_id === staffId && t.status !== 'done');
+  if (tasks.length === 0) {
+    el.innerHTML = '<div class="board-empty"><p>未完了のタスクなし</p></div>';
+    return;
+  }
+  const staff = allStaff.find(s => s.id === staffId);
+  el.innerHTML = tasks.map(t => {
+    const added = todayBoardOrder.includes(t.id);
+    const pColor = {low:'var(--muted)', medium:'var(--gold)', high:'var(--orange)', urgent:'var(--red)'}[t.priority];
+    const isChild = !!t.parent_task_id;
+    return `<div class="task-chip ${added?'task-chip-added':''}" onclick="addToBoard('${t.id}')">
+      <div class="task-chip-dot" style="background:${staff?.color||'var(--muted)'}"></div>
+      <div style="flex:1;min-width:0;">
+        <div style="${isChild?'padding-left:10px;color:var(--muted2);':''}">${isChild?'↳ ':''}<span style="${added?'text-decoration:line-through;':''}">${t.title}</span></div>
+      </div>
+      <span style="font-size:10px;color:${pColor};flex-shrink:0;">●</span>
+      ${added ? '<span style="font-size:10px;color:var(--green);">追加済</span>' : '<span style="font-size:18px;color:var(--gold);">+</span>'}
+    </div>`;
+  }).join('');
+}
+
+function addToBoard(taskId) {
+  if (!taskId) return;
+  if (todayBoardOrder.includes(taskId)) { showToast('すでに追加済みです', 'error'); return; }
+  todayBoardOrder.push(taskId);
+  saveBoardState();
+  renderBoardList();
+  updateBoardStats();
+  updateBoardCandidates(); // 追加済みマーク更新
+  initSortable();
+  showToast('追加しました ✅', 'success');
+}
+
+function toggleBoardDone(taskId) {
+  const idx = todayBoardDone.indexOf(taskId);
+  if (idx >= 0) todayBoardDone.splice(idx, 1);
+  else todayBoardDone.push(taskId);
+  saveBoardState();
+  renderBoardList();
+  updateBoardStats();
+}
+
+function removeFromBoard(taskId) {
+  todayBoardOrder = todayBoardOrder.filter(id => id !== taskId);
+  saveBoardState();
+  renderBoardList();
+  updateBoardStats();
+}
+
+function clearDoneFromBoard() {
+  todayBoardOrder = todayBoardOrder.filter(id => !todayBoardDone.includes(id));
+  todayBoardDone = todayBoardDone.filter(id => todayBoardOrder.includes(id));
+  saveBoardState();
+  renderBoardList();
+  updateBoardStats();
+  updateBoardCandidates();
+  initSortable();
+}
+
+function clearAllBoard() {
+  if (!confirm('ボードを全消去しますか？')) return;
+  todayBoardOrder = [];
+  todayBoardDone  = [];
+  saveBoardState();
+  renderBoardList();
+  updateBoardStats();
+  updateBoardCandidates();
+}
+
+function saveBoardState() {
+  localStorage.setItem('todayBoardOrder', JSON.stringify(todayBoardOrder));
+  localStorage.setItem('todayBoardDone',  JSON.stringify(todayBoardDone));
+}
+
+function renderBoardList() {
+  const el = document.getElementById('board-list');
+  if (!el) return;
+  if (todayBoardOrder.length === 0) {
+    el.innerHTML = `<div class="board-empty"><div class="board-empty-icon">🗒️</div><p>左からタスクを追加してください</p></div>`;
+    return;
+  }
+  el.innerHTML = todayBoardOrder.map((id, idx) => {
+    const t = allTasks.find(x => x.id === id);
+    if (!t) return '';
+    const staff = allStaff.find(s => s.id === t.staff_id);
+    const isDone = todayBoardDone.includes(id);
+    const pColor = {low:'var(--muted)', medium:'var(--gold)', high:'var(--orange)', urgent:'var(--red)'}[t.priority];
+    const pLabel = {low:'低', medium:'中', high:'高', urgent:'🔴'}[t.priority];
+    return `<div class="board-task ${isDone?'done-item':''}" data-id="${id}">
+      <div class="drag-handle" title="ドラッグで並び替え">⠿⠿</div>
+      <div class="priority-num">${idx+1}</div>
+      <div class="bt-check ${isDone?'done':''}" onclick="toggleBoardDone('${id}')">
+        ${isDone ? '✓' : ''}
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div class="bt-title">${t.title}</div>
+        <div class="bt-sub">
+          ${staff ? `<span style="color:${staff.color}">${staff.name}</span>` : ''}
+          ${t.estimated_hours ? ` · 予定${t.estimated_hours}h` : ''}
+          ${t.due_date ? ` · ${formatDate(t.due_date)}期限` : ''}
+        </div>
+      </div>
+      <span style="font-size:10px;color:${pColor};flex-shrink:0;">${pLabel}</span>
+      <span onclick="removeFromBoard('${id}')"
+        style="cursor:pointer;color:var(--muted);font-size:13px;flex-shrink:0;padding:4px 6px;border-radius:4px;"
+        onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--muted)'">✕</span>
+    </div>`;
+  }).join('');
+}
+
+function updateBoardStats() {
+  const total = todayBoardOrder.length;
+  const done = todayBoardDone.filter(id => todayBoardOrder.includes(id)).length;
+  const pct = total > 0 ? Math.round(done/total*100) : 0;
+  const el1 = document.getElementById('bs-total');
+  const el2 = document.getElementById('bs-done');
+  const el3 = document.getElementById('bs-left');
+  const elPct = document.getElementById('bs-pct');
+  const elBar = document.getElementById('bs-bar');
+  if (el1) { el1.textContent = total; el2.textContent = done; el3.textContent = total - done; }
+  if (elPct) elPct.textContent = pct + '%';
+  if (elBar) {
+    elBar.style.width = pct + '%';
+    elBar.style.background = pct === 100 ? 'var(--green)' : pct >= 50 ? 'var(--gold)' : 'var(--blue)';
+  }
+}
+
+// ══════════════════════════════
+// 分析
+// ══════════════════════════════
+let analyticsCharts = [];
+
+function renderAnalytics() {
+  const today = new Date().toISOString().split('T')[0];
+  const thirtyDaysAgo = new Date(Date.now() - 30*24*60*60*1000).toISOString().split('T')[0];
+
+  return `
+  <style>
+    .analytics-controls {
+      display:flex; flex-wrap:wrap; gap:12px; align-items:center;
+      background:var(--bg3); border:1px solid var(--border); border-radius:12px;
+      padding:16px 20px; margin-bottom:24px;
+    }
+    .analytics-controls label { font-size:11px; color:var(--muted); letter-spacing:.1em; }
+    .analytics-controls select, .analytics-controls input {
+      background:var(--bg2); border:1px solid var(--border2); color:var(--text);
+      border-radius:8px; padding:8px 12px; font-size:12px; font-family:inherit; outline:none;
+    }
+    .analytics-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+    @media(max-width:700px){ .analytics-grid{ grid-template-columns:1fr; } }
+    .chart-card {
+      background:var(--bg3); border:1px solid var(--border); border-radius:14px; padding:20px;
+    }
+    .chart-card h3 { font-size:12px; color:var(--muted); letter-spacing:.15em; text-transform:uppercase; margin-bottom:16px; }
+    .chart-wrap { position:relative; height:220px; }
+    .analytics-summary {
+      display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:24px;
+    }
+    .as-card {
+      background:var(--bg3); border:1px solid var(--border); border-radius:12px; padding:16px; text-align:center;
+    }
+    .as-val { font-size:26px; font-weight:900; line-height:1; }
+    .as-label { font-size:10px; color:var(--muted); margin-top:4px; letter-spacing:.08em; }
+    .task-history {
+      background:var(--bg3); border:1px solid var(--border); border-radius:14px; padding:20px; margin-top:20px;
+    }
+    .task-history h3 { font-size:12px; color:var(--muted); letter-spacing:.15em; text-transform:uppercase; margin-bottom:14px; }
+    .history-item {
+      display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--border); font-size:12px;
+    }
+    .history-item:last-child { border-bottom:none; }
+  </style>
+
+  <div class="analytics-controls">
+    <div>
+      <label>スタッフ</label><br>
+      <select id="a-staff" onchange="runAnalytics()">
+        <option value="">全員</option>
+        ${allStaff.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
+      </select>
+    </div>
+    <div>
+      <label>開始日</label><br>
+      <input type="date" id="a-from" value="${thirtyDaysAgo}" onchange="runAnalytics()" />
+    </div>
+    <div>
+      <label>終了日</label><br>
+      <input type="date" id="a-to" value="${today}" onchange="runAnalytics()" />
+    </div>
+    <div style="display:flex;gap:6px;align-items:flex-end;padding-top:16px;">
+      <button class="filter-btn" onclick="setAnalyticsPeriod(7)">7日</button>
+      <button class="filter-btn" onclick="setAnalyticsPeriod(30)">30日</button>
+      <button class="filter-btn" onclick="setAnalyticsPeriod(90)">90日</button>
+    </div>
+  </div>
+
+  <div class="analytics-summary" id="a-summary"></div>
+
+  <div class="analytics-grid">
+    <div class="chart-card">
+      <h3>📊 ステータス分布</h3>
+      <div class="chart-wrap"><canvas id="chart-status"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>🔥 優先度分布</h3>
+      <div class="chart-wrap"><canvas id="chart-priority"></canvas></div>
+    </div>
+    <div class="chart-card" style="grid-column:1/-1;">
+      <h3>📈 完了タスク推移（週別）</h3>
+      <div class="chart-wrap" style="height:200px;"><canvas id="chart-weekly"></canvas></div>
+    </div>
+    <div class="chart-card" style="grid-column:1/-1;" id="a-staff-breakdown" style="display:none;">
+      <h3>👥 スタッフ別タスク数</h3>
+      <div class="chart-wrap" style="height:200px;"><canvas id="chart-staff"></canvas></div>
+    </div>
+  </div>
+
+  <div class="task-history" id="a-history">
+    <h3>📋 タスク履歴</h3>
+    <div id="a-history-list"><div class="empty"><div class="empty-icon">📋</div><p>期間を選択してください</p></div></div>
+  </div>
+  `;
+}
+
+function initAnalytics() {
+  runAnalytics();
+}
+
+function setAnalyticsPeriod(days) {
+  const to = new Date().toISOString().split('T')[0];
+  const from = new Date(Date.now() - days*24*60*60*1000).toISOString().split('T')[0];
+  document.getElementById('a-from').value = from;
+  document.getElementById('a-to').value = to;
+  runAnalytics();
+}
+
+function destroyCharts() {
+  analyticsCharts.forEach(c => c.destroy());
+  analyticsCharts = [];
+}
+
+function runAnalytics() {
+  destroyCharts();
+  const staffId = document.getElementById('a-staff')?.value || '';
+  const from = document.getElementById('a-from')?.value || '';
+  const to   = document.getElementById('a-to')?.value   || '';
+
+  let tasks = allTasks;
+  if (staffId) tasks = tasks.filter(t => t.staff_id === staffId);
+  if (from)    tasks = tasks.filter(t => t.created_at >= from);
+  if (to)      tasks = tasks.filter(t => t.created_at <= to + 'T23:59:59');
+
+  const total  = tasks.length;
+  const done   = tasks.filter(t => t.status === 'done').length;
+  const wip    = tasks.filter(t => t.status === 'in_progress').length;
+  const todo   = tasks.filter(t => t.status === 'todo').length;
+  const urgent = tasks.filter(t => t.priority === 'urgent').length;
+  const totalEst = tasks.reduce((a,t)=>a+(t.estimated_hours||0),0);
+  const totalAct = tasks.reduce((a,t)=>a+(t.actual_hours||0),0);
+  const rate = total > 0 ? Math.round(done/total*100) : 0;
+
+  // サマリー
+  document.getElementById('a-summary').innerHTML = `
+    <div class="as-card"><div class="as-val" style="color:var(--gold)">${total}</div><div class="as-label">総タスク</div></div>
+    <div class="as-card"><div class="as-val" style="color:var(--green)">${done}</div><div class="as-label">完了</div></div>
+    <div class="as-card"><div class="as-val" style="color:var(--blue)">${wip}</div><div class="as-label">進行中</div></div>
+    <div class="as-card"><div class="as-val" style="color:var(--muted2)">${todo}</div><div class="as-label">未着手</div></div>
+    <div class="as-card"><div class="as-val" style="color:var(--gold)">${rate}%</div><div class="as-label">達成率</div></div>
+    <div class="as-card"><div class="as-val" style="color:var(--teal);font-size:18px">${totalAct.toFixed(1)}h</div><div class="as-label">実績 / ${totalEst.toFixed(1)}h予定</div></div>
+    ${urgent>0 ? `<div class="as-card" style="border-color:rgba(232,71,71,.3)"><div class="as-val" style="color:var(--red)">${urgent}</div><div class="as-label">緊急タスク</div></div>` : ''}
+  `;
+
+  const chartDefaults = {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { labels: { color: '#B8B3A8', font: { size: 11 } } } }
+  };
+
+  // ステータス円グラフ
+  const ctxStatus = document.getElementById('chart-status');
+  if (ctxStatus) {
+    analyticsCharts.push(new Chart(ctxStatus, {
+      type: 'doughnut',
+      data: {
+        labels: ['未着手', '進行中', '完了', '保留'],
+        datasets: [{
+          data: [todo, wip, done, tasks.filter(t=>t.status==='on_hold').length],
+          backgroundColor: ['rgba(184,179,168,0.6)','rgba(71,160,232,0.7)','rgba(71,232,160,0.7)','rgba(232,112,71,0.7)'],
+          borderColor: ['#B8B3A8','#47A0E8','#47E8A0','#E87047'],
+          borderWidth: 1.5
+        }]
+      },
+      options: { ...chartDefaults, cutout: '62%' }
+    }));
+  }
+
+  // 優先度円グラフ
+  const ctxPriority = document.getElementById('chart-priority');
+  if (ctxPriority) {
+    analyticsCharts.push(new Chart(ctxPriority, {
+      type: 'doughnut',
+      data: {
+        labels: ['低', '中', '高', '緊急'],
+        datasets: [{
+          data: ['low','medium','high','urgent'].map(p => tasks.filter(t=>t.priority===p).length),
+          backgroundColor: ['rgba(138,133,124,0.6)','rgba(232,197,71,0.7)','rgba(232,112,71,0.7)','rgba(232,71,71,0.7)'],
+          borderColor: ['#8A857C','#E8C547','#E87047','#E84747'],
+          borderWidth: 1.5
+        }]
+      },
+      options: { ...chartDefaults, cutout: '62%' }
+    }));
+  }
+
+  // 週別完了推移（折れ線）
+  const weekMap = {};
+  tasks.filter(t => t.status === 'done' && t.completed_at).forEach(t => {
+    const d = new Date(t.completed_at);
+    const weekStart = new Date(d);
+    weekStart.setDate(d.getDate() - d.getDay());
+    const key = weekStart.toISOString().split('T')[0];
+    weekMap[key] = (weekMap[key] || 0) + 1;
+  });
+  const weekKeys = Object.keys(weekMap).sort();
+  const ctxWeekly = document.getElementById('chart-weekly');
+  if (ctxWeekly) {
+    analyticsCharts.push(new Chart(ctxWeekly, {
+      type: 'bar',
+      data: {
+        labels: weekKeys.map(k => { const d = new Date(k); return `${d.getMonth()+1}/${d.getDate()}週`; }),
+        datasets: [{
+          label: '完了タスク数',
+          data: weekKeys.map(k => weekMap[k]),
+          backgroundColor: 'rgba(71,232,160,0.5)',
+          borderColor: '#47E8A0',
+          borderWidth: 1.5,
+          borderRadius: 6
+        }]
+      },
+      options: {
+        ...chartDefaults,
+        scales: {
+          x: { ticks: { color:'#8A857C' }, grid: { color:'rgba(255,255,255,0.04)' } },
+          y: { ticks: { color:'#8A857C' }, grid: { color:'rgba(255,255,255,0.04)' }, beginAtZero: true }
+        }
+      }
+    }));
+  }
+
+  // スタッフ別（全員選択時のみ）
+  const staffBreakdown = document.getElementById('a-staff-breakdown');
+  const ctxStaff = document.getElementById('chart-staff');
+  if (!staffId && ctxStaff) {
+    if (staffBreakdown) staffBreakdown.style.display = 'block';
+    const staffCounts = allStaff.map(s => ({
+      name: s.name,
+      color: s.color,
+      total: tasks.filter(t => t.staff_id === s.id).length,
+      done: tasks.filter(t => t.staff_id === s.id && t.status === 'done').length,
+    })).filter(s => s.total > 0);
+
+    analyticsCharts.push(new Chart(ctxStaff, {
+      type: 'bar',
+      data: {
+        labels: staffCounts.map(s => s.name),
+        datasets: [
+          {
+            label: '完了',
+            data: staffCounts.map(s => s.done),
+            backgroundColor: staffCounts.map(s => s.color + 'AA'),
+            borderColor: staffCounts.map(s => s.color),
+            borderWidth: 1.5, borderRadius: 6
+          },
+          {
+            label: '未完了',
+            data: staffCounts.map(s => s.total - s.done),
+            backgroundColor: 'rgba(255,255,255,0.06)',
+            borderColor: 'rgba(255,255,255,0.12)',
+            borderWidth: 1, borderRadius: 6
+          }
+        ]
+      },
+      options: {
+        ...chartDefaults,
+        scales: {
+          x: { stacked: true, ticks: { color:'#8A857C' }, grid: { color:'rgba(255,255,255,0.04)' } },
+          y: { stacked: true, ticks: { color:'#8A857C' }, grid: { color:'rgba(255,255,255,0.04)' }, beginAtZero: true }
+        }
+      }
+    }));
+  } else if (staffBreakdown) {
+    staffBreakdown.style.display = 'none';
+  }
+
+  // タスク履歴リスト
+  const doneTasks = tasks.filter(t => t.status === 'done').sort((a,b) => (b.completed_at||'').localeCompare(a.completed_at||''));
+  const historyEl = document.getElementById('a-history-list');
+  if (historyEl) {
+    historyEl.innerHTML = doneTasks.length === 0
+      ? '<div class="empty"><p>完了タスクなし</p></div>'
+      : doneTasks.map(t => {
+          const staff = allStaff.find(s => s.id === t.staff_id);
+          const pLabel = {low:'低', medium:'中', high:'高', urgent:'緊急'}[t.priority];
+          const pColor = {low:'var(--muted)', medium:'var(--gold)', high:'var(--orange)', urgent:'var(--red)'}[t.priority];
+          return `<div class="history-item">
+            <span style="font-size:11px;color:var(--green);flex-shrink:0;">✓</span>
+            <div style="flex:1;">
+              <div>${t.title}</div>
+              ${staff ? `<div style="font-size:10px;color:${staff.color};margin-top:2px;">${staff.name}</div>` : ''}
+            </div>
+            <span class="badge" style="background:${pColor}20;color:${pColor};flex-shrink:0;">${pLabel}</span>
+            ${t.actual_hours ? `<span style="font-size:10px;color:var(--teal);flex-shrink:0;">${t.actual_hours}h</span>` : ''}
+            ${t.completed_at ? `<span style="font-size:10px;color:var(--muted);flex-shrink:0;">${formatDate(t.completed_at)}</span>` : ''}
+          </div>`;
+        }).join('');
+  }
+}
+
+// ══════════════════════════════
+// タスク候補（音声抽出）
+// ══════════════════════════════
+function updatePendingBadge() {
+  const badge = document.getElementById('pending-badge');
+  if (!badge) return;
+  sb.from('tasks')
+    .select('id', { count: 'exact', head: true })
+    .eq('source', 'voice')
+    .eq('status', 'pending_approval')
+    .then(({ count }) => {
+      if (count && count > 0) {
+        badge.textContent = count;
+        badge.style.display = 'inline-block';
+        const drBadge = document.getElementById('dr-pending-badge');
+        if (drBadge) { drBadge.textContent = count; drBadge.style.display = 'inline-block'; }
+      } else {
+        badge.style.display = 'none';
+        const drBadge = document.getElementById('dr-pending-badge');
+        if (drBadge) drBadge.style.display = 'none';
+      }
+    });
+}
+
+async function renderPending() {
+  const content = document.getElementById('content');
+  content.innerHTML = '<div class="loading"><div class="spinner"></div> 読み込み中...</div>';
+
+  const { data: pendingTasks, error } = await sb
+    .from('tasks')
+    .select('*, staff:staff_id(name, color)')
+    .eq('source', 'voice')
+    .eq('status', 'pending_approval')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    content.innerHTML = '<div class="empty"><div class="empty-icon">❌</div><p>読み込みに失敗しました</p></div>';
+    return;
+  }
+
+  if (!pendingTasks || pendingTasks.length === 0) {
+    content.innerHTML = `
+      <div class="empty" style="padding:80px 20px;">
+        <div class="empty-icon">🎙️</div>
+        <p style="font-size:15px;color:var(--muted2);margin-bottom:8px;">現在タスク候補はありません</p>
+        <p style="font-size:13px;color:var(--muted);">録音から自動抽出されます</p>
+      </div>`;
+    return;
+  }
+
+  const cards = pendingTasks.map(t => {
+    const staffName = t.staff?.name || '未設定';
+    const staffColor = t.staff?.color || 'var(--muted)';
+    const createdDate = t.created_at ? formatDate(t.created_at) : '';
+    const desc = t.description ? `<div style="font-size:12px;color:var(--muted2);line-height:1.7;margin:10px 0;padding:10px 12px;background:rgba(255,255,255,0.03);border-left:2px solid rgba(232,197,71,0.3);border-radius:0 6px 6px 0;">${t.description}</div>` : '';
+    return `
+      <div class="stat-card" style="margin-bottom:12px;border-color:rgba(232,197,71,0.2);">
+        <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:6px;">
+          <span style="font-size:20px;flex-shrink:0;">🎙️</span>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:15px;font-weight:700;margin-bottom:4px;">${t.title}</div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:11px;color:var(--muted);">
+              <span style="display:flex;align-items:center;gap:5px;">
+                <span style="width:7px;height:7px;border-radius:50%;background:${staffColor};display:inline-block;"></span>
+                ${staffName}
+              </span>
+              ${createdDate ? `<span>📅 ${createdDate}</span>` : ''}
+              <span style="background:rgba(232,197,71,0.15);color:var(--gold);border-radius:10px;padding:1px 8px;font-weight:600;">音声抽出</span>
+            </div>
+          </div>
+        </div>
+        ${desc}
+        <div style="display:flex;gap:8px;margin-top:12px;">
+          <button class="btn" style="background:rgba(71,232,160,0.15);color:var(--green);border:1px solid rgba(71,232,160,0.4);flex:1;"
+            onclick="approvePending('${t.id}')">✅ 承認</button>
+          <button class="btn" style="background:rgba(232,112,71,0.12);color:var(--orange);border:1px solid rgba(232,112,71,0.35);flex:1;"
+            onclick="rejectPending('${t.id}')">🗑️ 却下</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  content.innerHTML = `
+    <div style="margin-bottom:20px;display:flex;align-items:center;gap:10px;">
+      <div style="font-size:12px;color:var(--muted);">
+        <span style="color:var(--gold);font-weight:700;">${pendingTasks.length}</span> 件の候補があります
+      </div>
+    </div>
+    ${cards}`;
+}
+
+async function approvePending(taskId) {
+  const { error } = await sb.from('tasks').update({ status: 'todo' }).eq('id', taskId);
+  if (error) { showToast('承認に失敗しました', 'error'); return; }
+  showToast('タスクを承認しました ✅', 'success');
+  await loadAll();
+  if (currentView === 'pending') renderPending();
+}
+
+async function rejectPending(taskId) {
+  const { error } = await sb.from('tasks').update({ status: 'rejected' }).eq('id', taskId);
+  if (error) { showToast('却下に失敗しました', 'error'); return; }
+  showToast('タスクを却下しました', 'success');
+  await loadAll();
+  if (currentView === 'pending') renderPending();
+}
+
+// ── FLATPICKR ──
+let duePicker;
+function initDatePicker() {
+  if (duePicker) duePicker.destroy();
+  duePicker = flatpickr('#f-due', {
+    locale: 'ja',
+    dateFormat: 'Y-m-d',
+    altInput: true,
+    altFormat: 'Y年m月d日',
+    minDate: 'today',
+    disableMobile: false,
+    onChange: function() {
+      document.querySelectorAll('#due-shortcuts .filter-btn').forEach(b => b.classList.remove('active'));
+    }
+  });
+}
+
+loadAll();
+initDatePicker();
+
+// ── MOBILE MODE ──
+function toggleMobileMode() {
+  const isMobile = document.body.classList.toggle('mobile-mode');
+  localStorage.setItem('mobileMode', isMobile ? '1' : '0');
+  updateMobileToggleBtn();
+}
+function updateMobileToggleBtn() {
+  const btn = document.getElementById('mobile-toggle-btn');
+  if (!btn) return;
+  const isMobile = document.body.classList.contains('mobile-mode');
+  btn.textContent = isMobile ? '🖥️ PC表示' : '📱 モバイル表示';
+}
+
+// 初期化：localStorageまたは画面幅でモバイルモードを決定
+(function initMobileMode() {
+  const savedMode = localStorage.getItem('mobileMode');
+  const isSmallScreen = window.innerWidth <= 768;
+  if (savedMode === '1' || (savedMode === null && isSmallScreen)) {
+    document.body.classList.add('mobile-mode');
+  }
+  updateMobileToggleBtn();
+})();
+
+// ── DRAWER ──
+function openDrawer() {
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('drawer-overlay').classList.add('open');
+  renderDrawerStaffNav();
+}
+function closeDrawer() {
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawer-overlay').classList.remove('open');
+}
+function renderDrawerStaffNav() {
+  const el = document.getElementById('drawer-staff-nav');
+  if (!el) return;
+  el.innerHTML = allStaff.map(s => {
+    const cnt = allTasks.filter(t => t.staff_id === s.id && t.status !== 'done').length;
+    const avatarSrc = STAFF_AVATARS[s.id];
+    return `<div class="drawer-item" onclick="filterByStaff('${s.id}'); closeDrawer();">
+      ${avatarSrc
+        ? `<img src="${avatarSrc}" style="width:22px;height:22px;border-radius:50%;object-fit:cover;flex-shrink:0;" />`
+        : `<div style="width:22px;height:22px;border-radius:50%;background:${s.color}20;color:${s.color};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">${s.name.charAt(0)}</div>`}
+      <span style="flex:1;">${s.name}</span>
+      ${cnt > 0 ? `<span style="font-size:11px;color:var(--muted);">${cnt}</span>` : ''}
+    </div>`;
+  }).join('');
+}
+</script>
+
+<!-- ドロワーオーバーレイ -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+
+<!-- ドロワーメニュー -->
+<div class="drawer" id="drawer">
+  <div class="drawer-header">
+    <div class="drawer-logo">Entity Task</div>
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="drawer-nav">
+    <div class="drawer-item active" onclick="switchView('dashboard'); closeDrawer();" id="dr-dashboard">
+      <span class="icon">🏠</span> ダッシュボード
+    </div>
+    <div class="drawer-item" onclick="switchView('tasks'); closeDrawer();" id="dr-tasks">
+      <span class="icon">✅</span> 全タスク
+    </div>
+    <div class="drawer-item" onclick="switchView('staff'); closeDrawer();" id="dr-staff">
+      <span class="icon">👥</span> スタッフ
+    </div>
+    <div class="drawer-item" onclick="switchView('today'); closeDrawer();" id="dr-today">
+      <span class="icon">🗒️</span> 今日のボード
+    </div>
+    <div class="drawer-item" onclick="switchView('analytics'); closeDrawer();" id="dr-analytics">
+      <span class="icon">📊</span> 分析
+    </div>
+    <div class="drawer-item" onclick="switchView('pending'); closeDrawer();" id="dr-pending">
+      <span class="icon">🎙️</span> タスク候補
+      <span id="dr-pending-badge" style="display:none;background:var(--gold);color:#000;border-radius:10px;padding:1px 7px;font-size:11px;font-weight:700;margin-left:auto;"></span>
+    </div>
+  </div>
+  <div class="drawer-section">スタッフ</div>
+  <div id="drawer-staff-nav"></div>
+  <div style="padding:16px;margin-top:auto;border-top:1px solid var(--card-border);">
+    <button class="btn btn-ghost" onclick="toggleMobileMode(); closeDrawer();" style="width:100%;justify-content:center;">🖥️ PC表示に切り替え</button>
+  </div>
+</div>
+</body>
+</html>
