@@ -1330,7 +1330,7 @@ function navigate(page) {
   if (page === 'meetings') renderMeetings();
   if (page === 'staff') renderStaffPage();
   if (page === 'dashboard') renderDashboard();
-  if (page === 'tasks') { tasksAutoLogin(); tasksInit(); }
+  if (page === 'tasks') { /* 外部リンク方式のため処理なし */ }
 
   navHistory.push(page);
   updateBackBtn(page);
