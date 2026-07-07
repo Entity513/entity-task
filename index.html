@@ -851,7 +851,7 @@ a { color: inherit; text-decoration: none; }
         <span class="nav-icon">🗣️</span>
         <span class="nav-label">ミーティング</span>
       </div>
-      <div class="nav-item" onclick="window.open('https://entity513.github.io/entity-task/','_self');" style="cursor:pointer;">
+      <div class="nav-item" onclick="goToTask();" style="cursor:pointer;">
         <span class="nav-icon">✅</span>
         <span class="nav-label">タスク</span>
         <span style="font-size:10px;color:var(--muted);">↗</span>
@@ -905,7 +905,7 @@ a { color: inherit; text-decoration: none; }
       </div>
       <div style="height:16px;"></div>
       <div class="dashboard-grid-3">
-        <div class="quick-link-card" onclick="window.open('https://entity513.github.io/entity-task/','_self');" style="cursor:pointer;">
+        <div class="quick-link-card" onclick="goToTask();" style="cursor:pointer;">
           <div class="quick-link-icon">
             <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
               <polygon points="24,4 44,14 44,34 24,44 4,34 4,14" stroke="#E8C547" stroke-width="1.5" fill="none" opacity="0.6"/>
@@ -1371,10 +1371,7 @@ async function loadStaff() {
   }
   if (!data) data = demoStaff;
   staffList = data;
-  const onlineIds = await getOnlineStaffIds();
-  renderLoginCards(onlineIds);
-
-  // 前回のログイン状態を復元
+  // 前回のログイン状態を最速で復元（エージェント選択スキップ）
   try {
     const savedId = localStorage.getItem('rebaseCurrentUserId');
     if (savedId) {
@@ -1382,6 +1379,11 @@ async function loadStaff() {
       if (saved) { loginAs(saved); return; }
     }
   } catch(e) {}
+
+  // 自動ログインできない場合のみエージェント選択画面を表示
+  document.getElementById('login-screen').style.opacity = '1';
+  const onlineIds = await getOnlineStaffIds();
+  renderLoginCards(onlineIds);
 }
 
 function renderLoginCards(onlineIds = []) {
@@ -2219,6 +2221,17 @@ async function tasksSave() {
   tasksRenderList();
 }
 
+// ===== GO TO TASK =====
+function goToTask() {
+  if (currentUser) {
+    try { 
+      localStorage.setItem('rebaseCurrentUserId', currentUser.id);
+      localStorage.setItem('entityCurrentUserId', currentUser.id);
+    } catch(e) {}
+  }
+  window.location.replace('https://entity513.github.io/entity-task/');
+}
+
 // ===== TASKS AUTO LOGIN =====
 let tasksIframeLoaded = false;
 function tasksAutoLogin() {
@@ -2239,9 +2252,8 @@ function tasksAutoLogin() {
 window.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     const splash = document.getElementById('splash-screen');
-    const login = document.getElementById('login-screen');
     if (splash) { splash.style.opacity = '0'; setTimeout(() => { splash.style.display = 'none'; }, 500); }
-    if (login) login.style.opacity = '1';
+    // loginはloadStaff()内で自動ログインor表示
   }, 1000);
 });
 
