@@ -643,19 +643,28 @@ body.mobile-mode .task-item {
   border: none !important;
   border-radius: 10px !important;
 }
+body.mobile-mode .task-item {
+  position: relative !important;
+  overflow: visible !important;
+}
 body.mobile-mode .task-item::before {
   content: '';
   position: absolute;
-  inset: 0;
-  border-radius: 10px;
-  padding: 1px;
+  inset: -1px;
+  border-radius: 11px;
   background: linear-gradient(135deg, #E8C547 0%, #E87047 50%, #E8C547 100%);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  opacity: 0.5;
+  z-index: -1;
+  opacity: 0.6;
   pointer-events: none;
-  z-index: 0;
+}
+body.mobile-mode .task-item::after {
+  content: '';
+  position: absolute;
+  inset: 0px;
+  border-radius: 10px;
+  background: var(--card-bg, rgba(255,255,255,0.03));
+  z-index: -1;
+  pointer-events: none;
 }
 
 /* モバイル：スタッフカードにグラデーション縁取り */
